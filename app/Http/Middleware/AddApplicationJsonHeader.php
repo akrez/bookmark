@@ -16,8 +16,7 @@ class AddApplicationJsonHeader
     public function handle(Request $request, Closure $next): Response
     {
         if ($request->is('api/*')) {
-            $request->headers->set('Content-Type', 'application/json');
-            $request->headers->set('Accept', 'application/json');
+            $request->headers->set('X-Requested-With', 'XMLHttpRequest');
         }
 
         return $next($request);
