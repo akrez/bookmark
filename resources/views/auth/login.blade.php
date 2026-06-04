@@ -25,7 +25,7 @@
                 </div>
             </div>
             <div class="col-lg-6">
-                <form class="w-100" method="POST" action="{{ route('api.auth.login') }}">
+                <form class="w-100" method="POST">
                     <div class="row mb-3">
                         <label for="email" class="col-md-4 col-form-label text-md-end">
                             Email Address
@@ -99,7 +99,7 @@
 
                     } catch (err) {
                         console.log(err);
-                        this.$store.alert.error('خطا');
+                        this.$store.alert.error('Error');
                     } finally {
                         this.loading.callAuthLogin = false;
                     }

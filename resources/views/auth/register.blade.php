@@ -2,8 +2,18 @@
 
 @section('title', __('Register'))
 
+@php
+    $params = [
+        'urls' => [
+            'api.auth.register' => route('api.auth.register'),
+            'auth.login' => route('auth.login'),
+        ],
+    ];
+@endphp
+
 @section('content')
-    <div class="container min-vh-100 d-flex justify-content-center flex-column">
+    <div class="container min-vh-100 d-flex justify-content-center flex-column" x-data="data()"
+        x-init="initData({{ json_encode($params) }})">
         <div class="row bg-white p-4 rounded-4 position-relative my-5 pt-5 align-items-center">
             <span
                 class="position-absolute top-0 start-50 translate-middle badge bg-info rounded-pill w-auto px-5 border border-1 border-white">
@@ -15,14 +25,15 @@
                 </div>
             </div>
             <div class="col-lg-6">
-                <form class="w-100" method="POST" action="{{route('api.auth.register')}}">
-                    @csrf
+                <form class="w-100" method="POST">
                     <div class="row mb-3">
                         <label for="name" class="col-md-4 col-form-label text-md-end">
                             Name
                         </label>
                         <div class="col-md-8">
-                            <input id="name" type="text" class="form-control" name="name" required autofocus>
+                            <input id="name" type="text"
+                                :class="{ 'form-control': true, 'is-invalid': !models.name }" name="name" required
+                                x-model="models.name">
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -30,7 +41,9 @@
                             Email Address
                         </label>
                         <div class="col-md-8">
-                            <input id="email" type="email" class="form-control" name="email" required>
+                            <input id="email" type="email"
+                                :class="{ 'form-control': true, 'is-invalid': !models.email }" name="email" required
+                                x-model="models.email">
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -38,7 +51,9 @@
                             Password
                         </label>
                         <div class="col-md-8">
-                            <input type="password" class="form-control" name="password" required>
+                            <input id="password" type="password"
+                                :class="{ 'form-control': true, 'is-invalid': !models.password }" name="password" required
+                                x-model="models.password">
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -46,12 +61,15 @@
                             Confirm Password
                         </label>
                         <div class="col-md-8">
-                            <input type="password" class="form-control" name="password_confirmation" required>
+                            <input id="password-confirm" type="password"
+                                :class="{ 'form-control': true, 'is-invalid': !models.password_confirmation }" name="password_confirmation" required
+                                x-model="models.password_confirmation">
                         </div>
                     </div>
                     <div class="row mb-0">
                         <div class="col-md-8 offset-md-4">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="button" class="btn btn-primary" @click="authRegister()"
+                                :disabled="loading.callAuthRegister || !models.name || !models.email || !models.password || !models.password_confirmation)">
                                 Register
                             </button>
                             <a class="btn btn-link" href="{{ route('auth.login') }}">
@@ -63,4 +81,54 @@
             </div>
         </div>
     </div>
+    <script>
+        function data() {
+            return {
+                urls: {},
+                loading: {
+                    callAuthRegister: false,
+                },
+                models: {
+                    name: null,
+                    email: null,
+                    password: null,
+                    password_confirmation: null,
+                },
+                async initData(initParams) {
+                    this.urls = initParams.urls;
+                },
+                async authRegister() {
+                    this.callAuthRegister({
+                        name: this.models.name,
+                        email: this.models.email,
+                        password: this.models.password,
+                        password_confirmation: this.models.password_confirmation,
+                    });
+                },
+                async callAuthRegister(data) {
+                    try {
+                        if (this.loading.callAuthRegister) return;
+                        this.loading.callAuthRegister = true;
+
+                        const res = await this.$store.call.postJson(this.urls['api.auth.register'], data);
+                        const resJson = await res.json();
+
+                        if (res.ok) {
+                            this.$store.alert.success(resJson.message);
+                            this.$store.auth.set(resJson.data.user, resJson.data.token);
+                            window.location.href = this.urls['auth.login'];
+                        } else {
+                            this.$store.alert.error(resJson.message, resJson.errors);
+                        }
+
+                    } catch (err) {
+                        console.log(err);
+                        this.$store.alert.error('Error');
+                    } finally {
+                        this.loading.callAuthRegister = false;
+                    }
+                },
+            };
+        }
+    </script>
 @endsection
