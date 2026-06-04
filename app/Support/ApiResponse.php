@@ -4,10 +4,10 @@ namespace App\Support;
 
 use Illuminate\Contracts\Support\MessageBag;
 use Illuminate\Contracts\Support\Responsable;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Lang;
 
 class ApiResponse implements Responsable
 {
@@ -46,10 +46,6 @@ class ApiResponse implements Responsable
     {
         $this->status = $status;
 
-        if ($setMessage) {
-            $this->message(__('http-statuses.'.$status));
-        }
-
         return $this;
     }
 
@@ -60,7 +56,7 @@ class ApiResponse implements Responsable
 
     public function message(?string $message): self
     {
-        $this->message = (($message and Lang::has($message)) ? __($message) : $message);
+        $this->message = $message;
 
         return $this;
     }
@@ -164,8 +160,24 @@ class ApiResponse implements Responsable
         ], $this->getStatus());
     }
 
-    public static function new($status = self::DEFAULT_STATUS): static
+    public static function make(int $status = self::DEFAULT_STATUS): static
     {
         return app(static::class)->status($status);
+    }
+
+    public static function makeFromValidator(Validator $validator): static
+    {
+        $messages = $validator->errors()->all();
+        if (count($messages) && is_string($messages[0])) {
+            $message = array_shift($messages);
+            if ($count = count($messages)) {
+                $pluralized = $count === 1 ? 'error' : 'errors';
+                $message .= ' '.$validator->getTranslator()->choice("(and :count more $pluralized)", $count, compact('count'));
+            }
+        } else {
+            $message = $validator->getTranslator()->get('The given data was invalid.');
+        }
+
+        return ApiResponse::make(422)->message($message)->errors($validator->errors());
     }
 }
