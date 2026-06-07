@@ -12,72 +12,76 @@
 @endphp
 
 @section('content')
-    <div class="container min-vh-100 d-flex justify-content-center flex-column" x-data="data()"
+    <div class="container-fluid min-vh-100 d-flex justify-content-center flex-column bg-info" x-data="data()"
         x-init="initData({{ json_encode($params) }})">
-        <div class="row bg-white p-4 rounded-4 position-relative my-5 pt-5 align-items-center">
-            <span
-                class="position-absolute top-0 start-50 translate-middle badge bg-info rounded-pill w-auto px-5 border border-1 border-white">
-                <h1 class="h2">{{ __('Register') }}</h1>
-            </span>
-            <div class="col-lg-6">
-                <div class="text-center">
-                    <img class="w-50" src="{{ url('images/story/register.svg') }}">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+                <div class="row bg-white p-4 rounded-4 position-relative my-5 pt-5 align-items-center">
+                    <span
+                        class="position-absolute top-0 start-50 translate-middle badge bg-info rounded-pill w-auto px-5 border border-2 border-white">
+                        <h1 class="h2">{{ __('Register') }}</h1>
+                    </span>
+                    <div class="col-lg-6">
+                        <div class="text-center">
+                            <img class="w-50" src="{{ url('images/story/register.svg') }}">
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <form class="w-100" method="POST">
+                            <div class="row mb-3">
+                                <label for="name" class="col-lg-4 col-form-label text-lg-end">
+                                    Name
+                                </label>
+                                <div class="col-lg-8">
+                                    <input id="name" type="text"
+                                        :class="{ 'form-control': true, 'is-invalid': !models.name }" name="name"
+                                        required x-model="models.name">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="email" class="col-lg-4 col-form-label text-lg-end">
+                                    Email Address
+                                </label>
+                                <div class="col-lg-8">
+                                    <input id="email" type="email"
+                                        :class="{ 'form-control': true, 'is-invalid': !models.email }" name="email"
+                                        required x-model="models.email">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="password" class="col-lg-4 col-form-label text-lg-end">
+                                    Password
+                                </label>
+                                <div class="col-lg-8">
+                                    <input id="password" type="password"
+                                        :class="{ 'form-control': true, 'is-invalid': !models.password }" name="password"
+                                        required x-model="models.password">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="password-confirm" class="col-lg-4 col-form-label text-lg-end">
+                                    Confirm Password
+                                </label>
+                                <div class="col-lg-8">
+                                    <input id="password-confirm" type="password"
+                                        :class="{ 'form-control': true, 'is-invalid': !models.password_confirmation }"
+                                        name="password_confirmation" required x-model="models.password_confirmation">
+                                </div>
+                            </div>
+                            <div class="row mb-0">
+                                <div class="col-lg-8 offset-lg-4">
+                                    <button type="button" class="btn btn-primary" @click="authRegister()"
+                                        :disabled="loading.callAuthRegister || !models.name || !models.email || !models.password || !models.password_confirmation">
+                                        Register
+                                    </button>
+                                    <a class="btn btn-link d-inline" href="{{ route('auth.login') }}">
+                                        {{ __('Already have an account? Login') }}
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </div>
-            <div class="col-lg-6">
-                <form class="w-100" method="POST">
-                    <div class="row mb-3">
-                        <label for="name" class="col-md-4 col-form-label text-md-end">
-                            Name
-                        </label>
-                        <div class="col-md-8">
-                            <input id="name" type="text"
-                                :class="{ 'form-control': true, 'is-invalid': !models.name }" name="name" required
-                                x-model="models.name">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label for="email" class="col-md-4 col-form-label text-md-end">
-                            Email Address
-                        </label>
-                        <div class="col-md-8">
-                            <input id="email" type="email"
-                                :class="{ 'form-control': true, 'is-invalid': !models.email }" name="email" required
-                                x-model="models.email">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label for="password" class="col-md-4 col-form-label text-md-end">
-                            Password
-                        </label>
-                        <div class="col-md-8">
-                            <input id="password" type="password"
-                                :class="{ 'form-control': true, 'is-invalid': !models.password }" name="password" required
-                                x-model="models.password">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label for="password-confirm" class="col-md-4 col-form-label text-md-end">
-                            Confirm Password
-                        </label>
-                        <div class="col-md-8">
-                            <input id="password-confirm" type="password"
-                                :class="{ 'form-control': true, 'is-invalid': !models.password_confirmation }" name="password_confirmation" required
-                                x-model="models.password_confirmation">
-                        </div>
-                    </div>
-                    <div class="row mb-0">
-                        <div class="col-md-8 offset-md-4">
-                            <button type="button" class="btn btn-primary" @click="authRegister()"
-                                :disabled="loading.callAuthRegister || !models.name || !models.email || !models.password || !models.password_confirmation)">
-                                Register
-                            </button>
-                            <a class="btn btn-link" href="{{ route('auth.login') }}">
-                                {{ __('Already have an account? Login') }}
-                            </a>
-                        </div>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
