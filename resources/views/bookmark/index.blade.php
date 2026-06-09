@@ -25,17 +25,17 @@
                 <div class="fs-7 d-inline-block px-0 py-2 me-3">News</div>
                 <div class="fs-7 d-inline-block px-0 py-2 me-3">Short</div>
                 <div class="fs-7 d-inline-block px-0 py-2 me-3">Web</div>
-                <div class="fs-7 d-inline-block px-0 py-2 me-3">More</div>
+                <div class="fs-7 d-inline-block px-0 py-2 me-3">None</div>
             </div>
         </div>
-        <div class="row py-4">
+        <div class="row pt-4">
             <div class="col-lg-10 offset-lg-1">
                 <div class="d-flex flex-wrap gap-2">
-                    <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary">Css</div>
-                    <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary">Bootstrap</div>
-                    <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary">Navbar</div>
-                    <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary">Carousel</div>
-                    <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary">Modal</div>
+                    <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary mb-4">Css</div>
+                    <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary mb-4">Bootstrap</div>
+                    <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary mb-4">Navbar</div>
+                    <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary mb-4">Carousel</div>
+                    <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary mb-4">Modal</div>
                 </div>
             </div>
         </div>
@@ -65,6 +65,26 @@
                         start. ثبت‌نام | ورود به حساب کاربری. شماره
                     </div>
                     <div class="d-flex gap-3 fs-7">
+                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
+                            Read
+                        </button>
+                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
+                            Archive
+                        </button>
+                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
+                            Share
+                        </button>
+                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
+                            Favorite
+                        </button>
+                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
+                            Tags
+                        </button>
+                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark fw-bold">
+                            Collection
+                        </button>
+                    </div>
+                    <div class="d-flex gap-3 fs-7">
                         <span class="text-dark">
                             #tag1
                         </span>
@@ -83,26 +103,6 @@
                         <span class="text-dark">
                             #tag6
                         </span>
-                    </div>
-                    <div class="d-flex gap-3 fs-7">
-                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
-                            Read
-                        </button>
-                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
-                            Archive
-                        </button>
-                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
-                            Share
-                        </button>
-                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
-                            Favorite
-                        </button>
-                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
-                            Collection
-                        </button>
-                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
-                            Tags
-                        </button>
                     </div>
                 </div>
 
