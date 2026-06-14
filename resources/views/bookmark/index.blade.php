@@ -1,10 +1,18 @@
 @extends('layouts.app')
 
-@section('title', 'بوکمارک‌ها')
+@section('title', 'Bookmarks')
+
+@php
+    $params = [
+        'urls' => [
+            'api.bookmarks.collections' => route('api.bookmarks.collections'),
+            'api.tags.index' => route('api.tags.index'),
+        ],
+    ];
+@endphp
 
 @section('content')
-
-    <div class="container-fluid">
+    <div class="container-fluid" x-data="data()" x-init="initData({{ json_encode($params) }})">
         <div class="row py-4">
             <div class="col-10 col-lg-7 offset-lg-1 d-flex justify-content-between align-items-center">
                 <input type="text" class="form-control rounded-pill py-2 px-4">
@@ -18,24 +26,42 @@
         </div>
         <div class="row border-bottom">
             <div class="col-lg-10 offset-lg-1">
-                <div class="fs-7 d-inline-block px-0 py-2 me-3 border-3 border-bottom border-dark">All</div>
-                <div class="fs-7 d-inline-block px-0 py-2 me-3">Images</div>
-                <div class="fs-7 d-inline-block px-0 py-2 me-3">Videos</div>
-                <div class="fs-7 d-inline-block px-0 py-2 me-3">Forums</div>
-                <div class="fs-7 d-inline-block px-0 py-2 me-3">News</div>
-                <div class="fs-7 d-inline-block px-0 py-2 me-3">Short</div>
-                <div class="fs-7 d-inline-block px-0 py-2 me-3">Web</div>
-                <div class="fs-7 d-inline-block px-0 py-2 me-3">None</div>
+                <div class="fs-7 d-inline-block px-0 py-2 me-3 fw-bold fw-semibold cursor-pointer user-select-none"
+                    @click="filters.collection = null"
+                    :class="{ 'border-3 border-bottom border-dark fw-bold': filters.collection === null }">
+                    All
+                </div>
+                <template x-if="loading.callBookmarksCollections">
+                    <div class="fs-7 d-inline-block px-0 py-2 me-3 cursor-pointer user-select-none">
+                        <div class="spinner-border spinner-border-sm"></div>
+                    </div>
+                </template>
+                <template x-for="collection in collections" x-show="!loading.callBookmarksCollections">
+                    <div class="fs-7 d-inline-block px-0 py-2 me-3 cursor-pointer user-select-none"
+                        :class="{ 'border-3 border-bottom border-dark fw-bold': filters.collection === collection.name }"
+                        x-text="collection.name" @click="filters.collection = collection.name">
+                    </div>
+                </template>
+                <div class="fs-7 d-inline-block px-0 py-2 me-3 fw-semibold cursor-pointer user-select-none"
+                    :class="{ 'border-3 border-bottom border-dark fw-bold': filters.collection === '' }"
+                    @click="filters.collection = ''">
+                    None
+                </div>
             </div>
         </div>
         <div class="row pt-4">
             <div class="col-lg-10 offset-lg-1">
-                <div class="d-flex flex-wrap gap-2">
-                    <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary mb-4">Css</div>
-                    <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary mb-4">Bootstrap</div>
-                    <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary mb-4">Navbar</div>
-                    <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary mb-4">Carousel</div>
-                    <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary mb-4">Modal</div>
+                <div class="d-flex flex-wrap gap-2 pb-4">
+                    <template x-if="loading.callTagsIndex">
+                        <div class="fs-7 rounded-pill pe-3 py-2 bg-white text-dark border border-light fw-bold">
+                            <div class="spinner-border spinner-border-sm"></div>
+                        </div>
+                    </template>
+                    <template x-for="tag in tags" x-show="!loading.callTagsIndex">
+                        <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary cursor-pointer user-select-none"
+                            :class="{ 'bg-secondary-subtle fw-bold': filters.tags.includes(tag.name) }" x-text="tag.name"
+                            @click="toggleTag(tag.name)"></div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -45,15 +71,12 @@
                 <div class="d-flex flex-column pb-4">
                     <div class="d-flex">
                         <div class="d-flex flex-grow-0 me-2 justify-content-center align-items-center">
-                            <img class="w-32" src="https://lendo.ir/favicon.ico">
+                            <img class="w-32" src="https://play.google.com/favicon.ico">
                         </div>
                         <div class="d-flex flex-column justify-content-center">
-                            <div class="fs-7">
-                                https://lendo.ir
-                                <i class="bi bi-three-dots-vertical"></i>
-                            </div>
+                            <div class="fs-7">Collection<i class="bi bi-three-dots-vertical"></i></div>
                             <div class="fs-8">
-                                https://lendo.ir/landing/bank-validation
+                                https://play.google.com/store/apps/details?id=com.facebook.lite&hl=en
                             </div>
                         </div>
                     </div>
@@ -61,114 +84,184 @@
                         لندو: خرید قسطی کالا و خدمات از فروشگاه‌های آنلاین
                     </div>
                     <div class="fs-7">
-                        آرمان گستر آریا (لندو) است.Copyrights - Lendo Co. - 1401. همین الان گردونه رو بچرخون، جایزه بگیر!
-                        start. ثبت‌نام | ورود به حساب کاربری. شماره
+                        The Facebook Lite app is small, allowing you to save space on your phone and use Facebook in 2G
+                        conditions.Read more
+                    </div>
+                    <div class="fs-7 text-decoration-underline">
+                        Note Note Note Note Note Note Note Note Note Note Note
                     </div>
                     <div class="d-flex gap-3 fs-7">
-                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
+                        <span class="p-0 text-secondary">
+                            <i class="bi bi-tag"></i>
+                            tag1
+                        </span>
+                        <span class="p-0 text-secondary">
+                            <i class="bi bi-tag"></i>
+                            tag2
+                        </span>
+                        <span class="p-0 text-secondary">
+                            <i class="bi bi-tag"></i>
+                            tag3
+                        </span>
+                    </div>
+                    <div class="d-flex gap-3 fs-7">
+                        <span class="p-0 text-secondary">
+                            <i class="bi bi-bookmark-check"></i>
                             Read
-                        </button>
-                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
+                        </span>
+                        <span class="p-0 text-secondary">
+                            <i class="bi bi-archive"></i>
                             Archive
-                        </button>
-                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
+                        </span>
+                        <span class="p-0 text-secondary">
+                            <i class="bi bi-share"></i>
                             Share
-                        </button>
-                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
+                        </span>
+                        <span class="p-0 text-secondary">
+                            <i class="bi bi-heart"></i>
                             Favorite
-                        </button>
-                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
-                            Tags
-                        </button>
-                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark fw-bold">
-                            Collection
-                        </button>
-                    </div>
-                    <div class="d-flex gap-3 fs-7">
-                        <span class="text-dark">
-                            #tag1
-                        </span>
-                        <span class="text-dark">
-                            #tag2
-                        </span>
-                        <span class="text-dark">
-                            #tag3
-                        </span>
-                        <span class="text-dark">
-                            #tag4
-                        </span>
-                        <span class="text-dark">
-                            #tag5
-                        </span>
-                        <span class="text-dark">
-                            #tag6
                         </span>
                     </div>
-                </div>
-
-                <div class="d-flex flex-column pb-4">
-                    <div class="d-flex">
-                        <div class="d-flex flex-grow-0 w-32 me-2 justify-content-center align-items-center">
-                            <img class="w-32" src="https://www.mydigipay.com/favicon.ico">
-                        </div>
-                        <div class="d-flex flex-column justify-content-center">
-                            <div class="fs-7">
-                                https://www.mydigipay.com
-                                <i class="bi bi-three-dots-vertical"></i>
+                    <ul class="list-group mt-1">
+                        <li class="list-group-item">
+                            <div class="row">
+                                <div class="col-12 mt-1">
+                                    <label class="form-label mb-1">Collection</label>
+                                    <input type="text" name="collection" class="form-control rounded-pill">
+                                </div>
                             </div>
-                            <div class="fs-8">
-                                https://www.mydigipay.com/merchants-seller/
+                            <div class="row mt-1">
+                                <div class="col-12 d-flex flex-wrap gap-2 justify-content-end mt-1">
+                                    <button type="submit" class="btn btn-primary rounded-pill shadow-sm">
+                                        Save Collection
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="fs-5 text-primary">
-                        صفحه‌اصلی | دیجی‌پی
-                    </div>
-                    <div class="fs-7">
-                        مانیتور 27 اینچ ای او سی مدل 27B30H با گارانتی 18 ماهه شرکتی · شلف دیواری زیر تی وی DT 136 ·
-                        پاوربانک Solar Flex ظرفیت 20000 میلی آمپری گرین لاین Green Lion Solar
-                    </div>
-                    <div class="d-flex gap-3 fs-7">
-                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
-                            Read
-                        </button>
-                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
-                            Archive
-                        </button>
-                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
-                            Share
-                        </button>
-                        <button class="btn btn-sm btn-link text-decoration-underline p-0 text-dark">
-                            Favorite
-                        </button>
-                    </div>
-                </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="row">
+                                <div class="col-12 mt-1">
+                                    <label class="form-label mb-1">Note</label>
+                                    <textarea name="note" rows="3" class="form-control rounded-4"></textarea>
+                                </div>
+                            </div>
+                            <div class="row mt-1">
+                                <div class="col-12 d-flex flex-wrap gap-2 justify-content-end mt-1">
+                                    <button type="submit" class="btn btn-primary rounded-pill shadow-sm">
+                                        Save Note
+                                    </button>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="row">
+                                <div class="col-12 mt-1">
+                                    <label class="form-label mb-1">Tags</label>
+                                </div>
+                                <div class="col-12 mt-1">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary">
+                                            Css</div>
+                                        <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary">
+                                            Bootstrap</div>
+                                        <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary">
+                                            Navbar</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-1">
+                                <div class="col-12 d-flex flex-wrap gap-2 justify-content-end mt-1">
+                                    <button type="submit" class="btn btn-primary rounded-pill shadow-sm">
+                                        Save Tags
+                                    </button>
+                                </div>
+                            </div>
 
-            </div>
-            <div class="col-lg-3">
-                <div class="card sticky-top">
-                    <div class="card-body">
-                        Notes Notes Notes Notes Notes Notes Notes Notes Notes Notes Notes Notes Notes Notes Notes Notes
-                        Notes Notes Notes Notes Notes Notes Notes Notes
-                    </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
-    <div class="modal fade" id="profileModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-person-badge"></i> پروفایل کاربر</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p><strong>نام:</strong> احسان محمدی</p>
-                    <p><strong>ایمیل:</strong> ehsan@bookmark.com</p>
-                    <p><strong>تعداد کل بوکمارک‌ها:</strong> 6</p>
-                    <p><strong>تعداد کالکشن‌ها:</strong> 6</p>
-                </div>
-            </div>
-        </div>
-    </div>
+    <script>
+        function data() {
+            return {
+                urls: {},
+                loading: {
+                    callBookmarksCollections: false,
+                    callTagsIndex: false,
+                },
+                models: {
+                    name: null,
+                    email: null,
+                    password: null,
+                    password_confirmation: null,
+                },
+                collections: [],
+                tags: [],
+                filters: {
+                    collection: null,
+                    tags: ['in'],
+                },
+                toggleTag(tagName) {
+                    if (this.filters.tags.includes(tagName)) {
+                        this.filters.tags = this.filters.tags.filter(t => t !== tagName)
+                    } else {
+                        this.filters.tags.push(tagName)
+                    }
+                },
+                async initData(initParams) {
+                    this.urls = initParams.urls;
+                    this.callBookmarksCollections();
+                    this.callTagsIndex();
+                },
+                async callBookmarksCollections(data) {
+                    try {
+                        if (this.loading.callBookmarksCollections) return;
+                        this.loading.callBookmarksCollections = true;
+
+                        const res = await this.$store.call.callJson(
+                            this.urls['api.bookmarks.collections'], null, 'GET', true
+                        );
+                        const resJson = await res.json();
+
+                        if (res.ok) {
+                            this.collections = resJson.data.collections;
+                        } else {
+                            this.$store.alert.error(resJson.message, resJson.errors);
+                        }
+
+                    } catch (err) {
+                        console.log(err);
+                        this.$store.alert.error('Error');
+                    } finally {
+                        this.loading.callBookmarksCollections = false;
+                    }
+                },
+                async callTagsIndex(data) {
+                    try {
+                        if (this.loading.callTagsIndex) return;
+                        this.loading.callTagsIndex = true;
+
+                        const res = await this.$store.call.callJson(
+                            this.urls['api.tags.index'], null, 'GET', true
+                        );
+                        const resJson = await res.json();
+
+                        if (res.ok) {
+                            this.tags = resJson.data.tags;
+                        } else {
+                            this.$store.alert.error(resJson.message, resJson.errors);
+                        }
+
+                    } catch (err) {
+                        console.log(err);
+                        this.$store.alert.error('Error');
+                    } finally {
+                        this.loading.callTagsIndex = false;
+                    }
+                }
+            };
+        }
+    </script>
 @endsection
