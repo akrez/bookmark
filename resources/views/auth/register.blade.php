@@ -71,7 +71,8 @@
                             <div class="row mb-0">
                                 <div class="col-lg-8 offset-lg-4">
                                     <button type="button" class="btn btn-primary" @click="authRegister()"
-                                        :disabled="loading.callAuthRegister || !models.name || !models.email || !models.password || !models.password_confirmation">
+                                        :disabled="loading.callAuthRegister || !models.name || !models.email || !models.password ||
+                                            !models.password_confirmation">
                                         Register
                                     </button>
                                     <a class="btn btn-link d-inline" href="{{ route('auth.login') }}">
@@ -114,7 +115,7 @@
                         if (this.loading.callAuthRegister) return;
                         this.loading.callAuthRegister = true;
 
-                        const res = await this.$store.call.postJson(this.urls['api.auth.register'], data);
+                        const res = await this.$store.call.callJson("POST", this.urls['api.auth.register'], null, data);
                         const resJson = await res.json();
 
                         if (res.ok) {

@@ -7,6 +7,7 @@
         'urls' => [
             'api.bookmarks.collections' => route('api.bookmarks.collections'),
             'api.tags.index' => route('api.tags.index'),
+            'api.bookmarks.index' => route('api.bookmarks.index'),
         ],
     ];
 @endphp
@@ -15,7 +16,7 @@
     <div class="container-fluid" x-data="data()" x-init="initData({{ json_encode($params) }})">
         <div class="row py-4">
             <div class="col-10 col-lg-7 offset-lg-1 d-flex justify-content-between align-items-center">
-                <input type="text" class="form-control rounded-pill py-2 px-4">
+                <input type="text" class="form-control rounded-pill py-2 px-4" x-model="filters.q">
             </div>
             <div
                 class="col-1 col-lg-1 offset-1 offset-lg-2 d-flex justify-content-between align-items-center flex-row-reverse">
@@ -25,33 +26,153 @@
             </div>
         </div>
         <div class="row border-bottom">
-            <div class="col-lg-10 offset-lg-1">
-                <div class="fs-7 d-inline-block px-0 py-2 me-3 fw-bold fw-semibold cursor-pointer user-select-none"
-                    @click="filters.collection = null"
-                    :class="{ 'border-3 border-bottom border-dark fw-bold': filters.collection === null }">
-                    All
-                </div>
-                <template x-if="loading.callBookmarksCollections">
-                    <div class="fs-7 d-inline-block px-0 py-2 me-3 cursor-pointer user-select-none">
+            <div class="col-lg-10 offset-lg-1 d-flex flex-row flex-wrap justify-content-between">
+                <div class="d-flex flex-grow-1 flex-wrap">
+                    <div class="fs-7 d-inline-block px-0 py-2 me-3 fw-bold fw-semibold cursor-pointer user-select-none border-3 border-bottom"
+                        @click="doFilter(() => filters.collection = null)"
+                        :class="(filters.collection === null ? 'border-dark fw-bold' : 'border-white')">
+                        All
+                    </div>
+                    <div class="fs-7 d-inline-block px-0 py-2 me-3 cursor-pointer user-select-none border-3 border-bottom"
+                        :class="(loading.callBookmarksCollections ? 'd-inline-block' : 'd-none')">
                         <div class="spinner-border spinner-border-sm"></div>
                     </div>
-                </template>
-                <template x-for="collection in collections" x-show="!loading.callBookmarksCollections">
-                    <div class="fs-7 d-inline-block px-0 py-2 me-3 cursor-pointer user-select-none"
-                        :class="{ 'border-3 border-bottom border-dark fw-bold': filters.collection === collection.name }"
-                        x-text="collection.name" @click="filters.collection = collection.name">
+                    <template x-for="collection in collections" x-show="!loading.callBookmarksCollections">
+                        <div class="fs-7 d-inline-block px-0 py-2 me-3 cursor-pointer user-select-none border-3 border-bottom"
+                            :class="(filters.collection === collection.name ? 'border-dark fw-bold' : 'border-white')"
+                            x-text="collection.name" @click="doFilter(() => filters.collection = collection.name)">
+                        </div>
+                    </template>
+                    <div class="fs-7 d-inline-block px-0 py-2 me-3 fw-semibold cursor-pointer user-select-none border-3 border-bottom"
+                        :class="(filters.collection === '' ? 'border-dark fw-bold' : 'border-white')"
+                        @click="doFilter(() => filters.collection = '')">
+                        None
                     </div>
-                </template>
-                <div class="fs-7 d-inline-block px-0 py-2 me-3 fw-semibold cursor-pointer user-select-none"
-                    :class="{ 'border-3 border-bottom border-dark fw-bold': filters.collection === '' }"
-                    @click="filters.collection = ''">
-                    None
+                </div>
+                <div class="dropdown" @click.outside="dropdown = null">
+
+                    <div class="fs-7 d-inline-block px-0 py-2 me-0 fw-bold fw-semibold cursor-pointer user-select-none border-3 border-bottom dropdown-toggle"
+                        :class="(filters.read != 'ALL' ? 'border-dark fw-bold' : 'border-white')"
+                        @click="setDropdown('read')">
+                        Read
+                    </div>
+                    <ul class="dropdown-menu w-100" :class="getDropdownClass('read')">
+                        <li class="d-flex justify-content-between px-3 cursor-pointer"
+                            @click="doFilter(() => filters.read = 'ALL')">
+                            <div>All</div>
+                            <template x-if="filters.read == 'ALL'">
+                                <i class="bi bi-check2"></i>
+                            </template>
+                        </li>
+                        <li class="d-flex justify-content-between px-3 cursor-pointer"
+                            @click="doFilter(() => filters.read = 'READ')">
+                            <div>Read</div>
+                            <template x-if="filters.read == 'READ'">
+                                <i class="bi bi-check2"></i>
+                            </template>
+                        </li>
+                        <li class="d-flex justify-content-between px-3 cursor-pointer"
+                            @click="doFilter(() => filters.read = 'UNREAD')">
+                            <div>UnRead</div>
+                            <template x-if="filters.read == 'UNREAD'">
+                                <i class="bi bi-check2"></i>
+                            </template>
+                        </li>
+                    </ul>
+
+                    <div class="fs-7 d-inline-block px-0 py-2 ms-3 fw-bold fw-semibold cursor-pointer user-select-none border-3 border-bottom dropdown-toggle"
+                        :class="(filters.share != 'ALL' ? 'border-dark fw-bold' : 'border-white')"
+                        @click="setDropdown('share')">
+                        Share
+                    </div>
+                    <ul class="dropdown-menu w-100" :class="getDropdownClass('share')">
+                        <li class="d-flex justify-content-between px-3 cursor-pointer"
+                            @click="doFilter(() => filters.share = 'ALL')">
+                            <div>All</div>
+                            <template x-if="filters.share == 'ALL'">
+                                <i class="bi bi-check2"></i>
+                            </template>
+                        </li>
+                        <li class="d-flex justify-content-between px-3 cursor-pointer"
+                            @click="doFilter(() => filters.share = 'SHARED')">
+                            <div>Shared</div>
+                            <template x-if="filters.share == 'SHARED'">
+                                <i class="bi bi-check2"></i>
+                            </template>
+                        </li>
+                        <li class="d-flex justify-content-between px-3 cursor-pointer"
+                            @click="doFilter(() => filters.share = 'UNSHARED')">
+                            <div>UnShared</div>
+                            <template x-if="filters.share == 'UNSHARED'">
+                                <i class="bi bi-check2"></i>
+                            </template>
+                        </li>
+                    </ul>
+
+                    <div class="fs-7 d-inline-block px-0 py-2 ms-3 fw-bold fw-semibold cursor-pointer user-select-none border-3 border-bottom dropdown-toggle"
+                        :class="(filters.favorite != 'ALL' ? 'border-dark fw-bold' : 'border-white')"
+                        @click="setDropdown('favorite')">
+                        Favorite
+                    </div>
+                    <ul class="dropdown-menu w-100" :class="getDropdownClass('favorite')">
+                        <li class="d-flex justify-content-between px-3 cursor-pointer"
+                            @click="doFilter(() => filters.favorite = 'ALL')">
+                            <div>All</div>
+                            <template x-if="filters.favorite == 'ALL'">
+                                <i class="bi bi-check2"></i>
+                            </template>
+                        </li>
+                        <li class="d-flex justify-content-between px-3 cursor-pointer"
+                            @click="doFilter(() => filters.favorite = 'FAVORITED')">
+                            <div>Favorited</div>
+                            <template x-if="filters.favorite == 'FAVORITED'">
+                                <i class="bi bi-check2"></i>
+                            </template>
+                        </li>
+                        <li class="d-flex justify-content-between px-3 cursor-pointer"
+                            @click="doFilter(() => filters.favorite = 'UNFAVORITED')">
+                            <div>UnFavorited</div>
+                            <template x-if="filters.favorite == 'UNFAVORITED'">
+                                <i class="bi bi-check2"></i>
+                            </template>
+                        </li>
+                    </ul>
+
+                    <div class="fs-7 d-inline-block px-0 py-2 ms-3 fw-bold fw-semibold cursor-pointer user-select-none border-3 border-bottom dropdown-toggle"
+                        :class="(filters.archive != 'ALL' ? 'border-dark fw-bold' : 'border-white')"
+                        @click="setDropdown('archive')">
+                        Archive
+                    </div>
+                    <ul class="dropdown-menu w-100" :class="getDropdownClass('archive')">
+                        <li class="d-flex justify-content-between px-3 cursor-pointer"
+                            @click="doFilter(() => filters.archive = 'ALL')">
+                            <div>All</div>
+                            <template x-if="filters.archive == 'ALL'">
+                                <i class="bi bi-check2"></i>
+                            </template>
+                        </li>
+                        <li class="d-flex justify-content-between px-3 cursor-pointer"
+                            @click="doFilter(() => filters.archive = 'ARCHIVED')">
+                            <div>Archived</div>
+                            <template x-if="filters.archive == 'ARCHIVED'">
+                                <i class="bi bi-check2"></i>
+                            </template>
+                        </li>
+                        <li class="d-flex justify-content-between px-3 cursor-pointer"
+                            @click="doFilter(() => filters.archive = 'UNARCHIVED')">
+                            <div>UnArchived</div>
+                            <template x-if="filters.archive == 'UNARCHIVED'">
+                                <i class="bi bi-check2"></i>
+                            </template>
+                        </li>
+                    </ul>
+
                 </div>
             </div>
         </div>
         <div class="row pt-4">
             <div class="col-lg-10 offset-lg-1">
-                <div class="d-flex flex-wrap gap-2 pb-4">
+                <div class="d-flex flex-wrap gap-2 pb-5">
                     <template x-if="loading.callTagsIndex">
                         <div class="fs-7 rounded-pill pe-3 py-2 bg-white text-dark border border-light fw-bold">
                             <div class="spinner-border spinner-border-sm"></div>
@@ -67,121 +188,95 @@
         </div>
         <div class="row">
             <div class="col-lg-7 offset-lg-1">
-
-                <div class="d-flex flex-column pb-4">
-                    <div class="d-flex">
-                        <div class="d-flex flex-grow-0 me-2 justify-content-center align-items-center">
-                            <img class="w-32" src="https://play.google.com/favicon.ico">
-                        </div>
-                        <div class="d-flex flex-column justify-content-center">
-                            <div class="fs-7">Collection<i class="bi bi-three-dots-vertical"></i></div>
-                            <div class="fs-8">
-                                https://play.google.com/store/apps/details?id=com.facebook.lite&hl=en
-                            </div>
-                        </div>
+                <template x-if="loading.callBookmarksIndex">
+                    <div class="fs-7 rounded-pill pe-3 py-2 bg-white text-dark border border-light fw-bold pb-5">
+                        <div class="spinner-border spinner-border-sm"></div>
                     </div>
-                    <div class="fs-5 text-primary">
-                        لندو: خرید قسطی کالا و خدمات از فروشگاه‌های آنلاین
+                </template>
+                <template x-if="!loading.callBookmarksIndex && (bookmarks.length < 1)">
+                    <div class="fs-7 pb-5">
+                        Your search did not match any documents.
                     </div>
-                    <div class="fs-7">
-                        The Facebook Lite app is small, allowing you to save space on your phone and use Facebook in 2G
-                        conditions.Read more
-                    </div>
-                    <div class="fs-7 text-decoration-underline">
-                        Note Note Note Note Note Note Note Note Note Note Note
-                    </div>
-                    <div class="d-flex gap-3 fs-7">
-                        <span class="p-0 text-secondary">
-                            <i class="bi bi-tag"></i>
-                            tag1
-                        </span>
-                        <span class="p-0 text-secondary">
-                            <i class="bi bi-tag"></i>
-                            tag2
-                        </span>
-                        <span class="p-0 text-secondary">
-                            <i class="bi bi-tag"></i>
-                            tag3
-                        </span>
-                    </div>
-                    <div class="d-flex gap-3 fs-7">
-                        <span class="p-0 text-secondary">
-                            <i class="bi bi-bookmark-check"></i>
-                            Read
-                        </span>
-                        <span class="p-0 text-secondary">
-                            <i class="bi bi-archive"></i>
-                            Archive
-                        </span>
-                        <span class="p-0 text-secondary">
-                            <i class="bi bi-share"></i>
-                            Share
-                        </span>
-                        <span class="p-0 text-secondary">
-                            <i class="bi bi-heart"></i>
-                            Favorite
-                        </span>
-                    </div>
-                    <ul class="list-group mt-1">
-                        <li class="list-group-item">
-                            <div class="row">
-                                <div class="col-12 mt-1">
-                                    <label class="form-label mb-1">Collection</label>
-                                    <input type="text" name="collection" class="form-control rounded-pill">
+                </template>
+                <template x-if="!loading.callBookmarksIndex">
+                    <template x-for="bookmark in bookmarks">
+                        <div class="d-flex flex-column pb-5">
+                            <div class="d-flex">
+                                <div class="d-flex flex-grow-0 me-2 justify-content-center align-items-center">
+                                    <img class="w-32" :src="bookmark.url.base_url + '/favicon.ico'">
                                 </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-12 d-flex flex-wrap gap-2 justify-content-end mt-1">
-                                    <button type="submit" class="btn btn-primary rounded-pill shadow-sm">
-                                        Save Collection
-                                    </button>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="list-group-item">
-                            <div class="row">
-                                <div class="col-12 mt-1">
-                                    <label class="form-label mb-1">Note</label>
-                                    <textarea name="note" rows="3" class="form-control rounded-4"></textarea>
-                                </div>
-                            </div>
-                            <div class="row mt-1">
-                                <div class="col-12 d-flex flex-wrap gap-2 justify-content-end mt-1">
-                                    <button type="submit" class="btn btn-primary rounded-pill shadow-sm">
-                                        Save Note
-                                    </button>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="list-group-item">
-                            <div class="row">
-                                <div class="col-12 mt-1">
-                                    <label class="form-label mb-1">Tags</label>
-                                </div>
-                                <div class="col-12 mt-1">
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary">
-                                            Css</div>
-                                        <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary">
-                                            Bootstrap</div>
-                                        <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary">
-                                            Navbar</div>
+                                <div class="d-flex flex-column justify-content-center">
+                                    <div class="fs-7">
+                                        <span class="pe-1" x-text="bookmark.collection"></span>
+                                        <i class="bi bi-three-dots-vertical"></i>
                                     </div>
+                                    <div class="fs-8" x-text="bookmark.url.url"></div>
                                 </div>
                             </div>
-                            <div class="row mt-1">
-                                <div class="col-12 d-flex flex-wrap gap-2 justify-content-end mt-1">
-                                    <button type="submit" class="btn btn-primary rounded-pill shadow-sm">
-                                        Save Tags
-                                    </button>
+                            <a class="fs-5 text-primary text-decoration-none" x-text="bookmark.url.title" target="_blank"
+                                :href="bookmark.url.url"></a>
+                            <div class="fs-7" x-text="bookmark.url.description"></div>
+                            <div class="fs-7 text-decoration-underline" x-text="bookmark.note"></div>
+                            <template x-if="bookmark.tags">
+                                <div class="d-flex gap-3 fs-7">
+                                    <template x-for="tag in bookmark.tags">
+                                        <span class="p-0 text-secondary">
+                                            <i class="bi bi-tag pe-1"></i>
+                                            <span x-text="tag.name"></span>
+                                        </span>
+                                    </template>
                                 </div>
+                            </template>
+                            <div class="d-flex gap-3 fs-7">
+                                <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.read_at }">
+                                    <i class="bi bi-bookmark-check pe-1"></i>
+                                    <span x-text="bookmark.read_at ? 'Read' : 'Read'"></span>
+                                </span>
+                                <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.shared_at }">
+                                    <i class="bi bi-share pe-1"></i>
+                                    <span x-text="bookmark.shared_at ? 'Shared' : 'Share'"></span>
+                                </span>
+                                <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.favorited_at }">
+                                    <i class="bi bi-heart pe-1"></i>
+                                    <span x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
+                                </span>
+                                <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.archived_at }">
+                                    <i class="bi bi-archive pe-1"></i>
+                                    <span x-text="bookmark.archived_at ? 'Archived' : 'Archive'"></span>
+                                </span>
                             </div>
-
-                        </li>
-                    </ul>
-                </div>
+                        </div>
+                    </template>
+                </template>
             </div>
         </div>
+        <template x-if="!loading.callBookmarksIndex && paginator && !(paginator.currentPage == 1 && paginator.onLastPage)">
+            <div class="row pb-5">
+                <div class="col-lg-7 offset-lg-1">
+                    <div class="d-flex justify-content-center gap-3">
+                        <a x-show="paginator?.currentPage > 2" @click="doFilter(() => filters.page = 1, false)"
+                            class="cursor-pointer me-3 text-decoration-none text-primary">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                        <a x-show="paginator?.currentPage > 1"
+                            @click="doFilter(() => filters.page = paginator?.currentPage - 1, false)"
+                            class="cursor-pointer me-3 text-decoration-none text-primary">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                        <template x-for="n in pageRange()">
+                            <span @click="doFilter(() => filters.page = n, false)" class="text-decoration-none"
+                                x-text="n"
+                                :class="{ 'cursor-pointer text-primary': paginator?.currentPage != n }"></span>
+                        </template>
+                        <a x-show="!paginator?.onLastPage"
+                            @click="doFilter(() =>filters.page = paginator?.currentPage + 1, false)"
+                            class="cursor-pointer ms-3 text-decoration-none text-primary">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </template>
     </div>
     <script>
         function data() {
@@ -190,18 +285,73 @@
                 loading: {
                     callBookmarksCollections: false,
                     callTagsIndex: false,
+                    callBookmarksIndex: false,
                 },
-                models: {
-                    name: null,
-                    email: null,
-                    password: null,
-                    password_confirmation: null,
-                },
+                models: {},
                 collections: [],
                 tags: [],
+                bookmarks: [],
                 filters: {
+                    q: '',
                     collection: null,
-                    tags: ['in'],
+                    tags: [],
+                    read: "ALL",
+                    archive: "UNARCHIVED",
+                    share: "ALL",
+                    favorite: "ALL",
+                    page: 1
+                },
+                dropdown: null,
+                paginator: null,
+                init() {
+                    this.$watch('filters', () => {
+                        this.callBookmarksIndex();
+                    }, {
+                        deep: true
+                    });
+                },
+                async initData(initParams) {
+                    this.urls = initParams.urls;
+                    this.callBookmarksCollections();
+                    this.callTagsIndex();
+                    this.callBookmarksIndex();
+                },
+                doFilter(func, resetPage = true) {
+                    func();
+                    if (resetPage) {
+                        this.filters.page = 1;
+                    }
+                },
+                pageRange(sideCount = 2) {
+                    let s = this.paginator.currentPage - sideCount;
+                    if (s < 1) s = 1;
+
+                    let e = s + (sideCount * 2);
+
+                    const arr = [];
+                    for (let i = s; i <= e; i++) {
+                        if (this.paginator.onLastPage) {
+                            if (i <= this.paginator.currentPage) {
+                                arr.push(i);
+                            }
+                        } else {
+                            arr.push(i);
+                        }
+                    };
+                    return arr;
+                },
+                getDropdownClass(dropdown) {
+                    if (this.dropdown == dropdown) {
+                        return 'd-block';
+                    }
+                    return 'd-none';
+                },
+                setDropdown(newDropdown) {
+                    if (newDropdown && (this.dropdown != newDropdown)) {
+                        this.dropdown = newDropdown;
+                    } else {
+                        this.dropdown = null;
+                    }
                 },
                 toggleTag(tagName) {
                     if (this.filters.tags.includes(tagName)) {
@@ -210,18 +360,13 @@
                         this.filters.tags.push(tagName)
                     }
                 },
-                async initData(initParams) {
-                    this.urls = initParams.urls;
-                    this.callBookmarksCollections();
-                    this.callTagsIndex();
-                },
-                async callBookmarksCollections(data) {
+                async callBookmarksCollections() {
                     try {
                         if (this.loading.callBookmarksCollections) return;
                         this.loading.callBookmarksCollections = true;
 
                         const res = await this.$store.call.callJson(
-                            this.urls['api.bookmarks.collections'], null, 'GET', true
+                            'GET', this.urls['api.bookmarks.collections'], null, null, true
                         );
                         const resJson = await res.json();
 
@@ -238,13 +383,13 @@
                         this.loading.callBookmarksCollections = false;
                     }
                 },
-                async callTagsIndex(data) {
+                async callTagsIndex() {
                     try {
                         if (this.loading.callTagsIndex) return;
                         this.loading.callTagsIndex = true;
 
                         const res = await this.$store.call.callJson(
-                            this.urls['api.tags.index'], null, 'GET', true
+                            'GET', this.urls['api.tags.index'], null, null, true
                         );
                         const resJson = await res.json();
 
@@ -260,7 +405,35 @@
                     } finally {
                         this.loading.callTagsIndex = false;
                     }
-                }
+                },
+                async callBookmarksIndex() {
+                    try {
+                        if (this.loading.callBookmarksIndex) return;
+                        this.loading.callBookmarksIndex = true;
+
+                        const filters = JSON.parse(JSON.stringify(this.filters));
+                        if (this.filters.collection === null) {
+                            delete filters.collection;
+                        }
+                        const res = await this.$store.call.callJson(
+                            'GET', this.urls['api.bookmarks.index'], filters, null, true
+                        );
+                        const resJson = await res.json();
+
+                        if (res.ok) {
+                            this.bookmarks = resJson.data.bookmarks;
+                            this.paginator = resJson.paginator;
+                        } else {
+                            this.$store.alert.error(resJson.message, resJson.errors);
+                        }
+
+                    } catch (err) {
+                        console.log(err);
+                        this.$store.alert.error('Error');
+                    } finally {
+                        this.loading.callBookmarksIndex = false;
+                    }
+                },
             };
         }
     </script>

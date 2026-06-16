@@ -90,7 +90,7 @@
                         if (this.loading.callAuthLogin) return;
                         this.loading.callAuthLogin = true;
 
-                        const res = await this.$store.call.postJson(this.urls['api.auth.login'], data);
+                        const res = await this.$store.call.callJson("POST", this.urls['api.auth.login'], null, data);
                         const resJson = await res.json();
 
                         if (res.ok) {
