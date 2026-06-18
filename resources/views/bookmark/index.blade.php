@@ -8,6 +8,7 @@
             'api.bookmarks.collections' => route('api.bookmarks.collections'),
             'api.tags.index' => route('api.tags.index'),
             'api.bookmarks.index' => route('api.bookmarks.index'),
+            'api.auth.logout' => route('api.auth.logout'),
         ],
     ];
 @endphp
@@ -20,7 +21,7 @@
             </div>
             <div
                 class="col-1 col-lg-1 offset-1 offset-lg-2 d-flex justify-content-between align-items-center flex-row-reverse">
-                <button class="btn btn-primary rounded-pill">
+                <button class="btn btn-primary rounded-circle" @click="isProfileModalOpen = !isProfileModalOpen">
                     A
                 </button>
             </div>
@@ -277,17 +278,52 @@
                 </div>
             </div>
         </template>
+        <div class="modal bg-black-50" tabindex="-1" :class="isProfileModalOpen ? 'd-block' : 'd-none'"
+            @click="isProfileModalOpen = false">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content bg-profile-modal rounded rounded-5" @click.stop>
+                    <div class="modal-body p-0">
+                        <div class="d-flex justify-content-between align-items-center p-3 fs-7">
+                            <span class="text-center flex-grow-1" x-text="$store.auth.user().name">Modal title</span>
+                            <i class="bi bi-x-lg cursor-pointer" @click="isProfileModalOpen = false"></i>
+                        </div>
+                        <div class="d-flex justify-content-center p-3 border-bottom pt-0">
+                            <span class="text-center flex-grow-1 fs-3"
+                                x-text="'Hi, ' + $store.auth.user().email + '!'"></span>
+                        </div>
+                        <div class="btn-group btn-group-lg p-3 w-100">
+                            <button type="button"
+                                class="btn btn-outline-secondary rounded-5 d-flex justify-content-center align-items-center gap-2 rounded-end"
+                                @click="console.log(1);" :disabled="loading.callAuthLogout">
+                                <i
+                                    :class="loading.callAuthLogout ? 'spinner-border spinner-border-sm' : 'bi bi-plus-circle'"></i>
+                                Import
+                            </button>
+                            <button type="button"
+                                class="btn btn-outline-secondary rounded-5 d-flex justify-content-center align-items-center gap-2 rounded-start"
+                                @click="callAuthLogout()" :disabled="loading.callAuthLogout">
+                                <i
+                                    :class="loading.callAuthLogout ? 'spinner-border spinner-border-sm' :
+                                        'bi bi-box-arrow-right'"></i>
+                                Sign out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <script>
         function data() {
             return {
                 urls: {},
+                isProfileModalOpen: false,
                 loading: {
                     callBookmarksCollections: false,
                     callTagsIndex: false,
                     callBookmarksIndex: false,
+                    callAuthLogout: false,
                 },
-                models: {},
                 collections: [],
                 tags: [],
                 bookmarks: [],
@@ -432,6 +468,29 @@
                         this.$store.alert.error('Error');
                     } finally {
                         this.loading.callBookmarksIndex = false;
+                    }
+                },
+                async callAuthLogout() {
+                    try {
+                        if (this.loading.callAuthLogout) return;
+                        this.loading.callAuthLogout = true;
+
+                        const res = await this.$store.call.callJson(
+                            'POST', this.urls['api.auth.logout'], null, null, true
+                        );
+                        const resJson = await res.json();
+
+                        if (res.ok) {
+                            window.location.href = "/auth/login";
+                        } else {
+                            this.$store.alert.error(resJson.message, resJson.errors);
+                        }
+
+                    } catch (err) {
+                        console.log(err);
+                        this.$store.alert.error('Error');
+                    } finally {
+                        this.loading.callAuthLogout = false;
                     }
                 },
             };
