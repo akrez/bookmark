@@ -9,6 +9,7 @@
             'api.tags.index' => route('api.tags.index'),
             'api.bookmarks.index' => route('api.bookmarks.index'),
             'api.auth.logout' => route('api.auth.logout'),
+            'api.netscape.import' => route('api.netscape.import'),
         ],
     ];
 @endphp
@@ -20,8 +21,9 @@
                 <input type="text" class="form-control rounded-pill py-2 px-4" x-model="filters.q">
             </div>
             <div class="col-3 col-lg-1 offset-1 offset-lg-2 d-flex justify-content-end align-items-center gap-3">
-                <button class="btn btn-info rounded bg-white text-secondary border border-secondary rounded-4 d-flex flex-row p-2 px-3"
-                    @click="isImportModalOpen = !isImportModalOpen">
+                <button
+                    class="btn rounded bg-white text-secondary border border-secondary rounded-4 d-flex flex-row p-2 px-3"
+                    @click="isImportModalOpen ? closeImportModal() : (isImportModalOpen  = true)">
                     <i class="bi bi-pencil me-2"></i>
                     <span>Create</span>
                 </button>
@@ -215,7 +217,7 @@
                                         <span class="pe-1" x-text="bookmark.collection"></span>
                                         <i class="bi bi-three-dots-vertical"></i>
                                     </div>
-                                    <div class="fs-8" x-text="bookmark.url.url"></div>
+                                    <a class="fs-8 text-decoration-none text-dark" x-text="bookmark.url.url" target="_blank" :href="bookmark.url.url"></a>
                                 </div>
                             </div>
                             <a class="fs-5 text-primary text-decoration-none" x-text="bookmark.url.title" target="_blank"
@@ -310,22 +312,24 @@
             </div>
         </div>
         <div class="modal bg-black-50" tabindex="-1" :class="isImportModalOpen ? 'd-block' : 'd-none'"
-            @click="isImportModalOpen = false">
+            @click="closeImportModal()">
             <div class="modal-dialog modal-dialog-scrollable">
                 <div class="modal-content bg-modal rounded rounded-5" @click.stop>
                     <div class="modal-body p-0">
                         <div class="d-flex justify-content-between align-items-center p-3 fs-7">
                             <span></span>
-                            <i class="bi bi-x-lg cursor-pointer" @click="isImportModalOpen = false"></i>
+                            <i class="bi bi-x-lg cursor-pointer" @click="closeImportModal()"></i>
                         </div>
                         <div class="d-flex flex-column justify-content-center p-3 pt-0 gap-3">
                             <span class="text-center flex-grow-1">Import netscape html file</span>
-                            <input class="form-control" type="file">
+                            <input class="form-control" type="file" accept=".html,.htm"
+                                x-ref="netscapeImportFileInput" @change="handleNetscapeImportFile($event)">
                             <button type="button"
                                 class="btn btn-light w-100 rounded-5 d-flex justify-content-center align-items-center gap-2 rounded"
-                                @click="callAuthLogout()" :disabled="loading.callAuthLogout">
+                                @click="callNetscapeImport()"
+                                :disabled="loading.callNetscapeImport || !netscapeImportFile">
                                 <i
-                                    :class="loading.callAuthLogout ? 'spinner-border spinner-border-sm' :
+                                    :class="loading.callNetscapeImport ? 'spinner-border spinner-border-sm' :
                                         'bi bi-file-earmark-arrow-up'"></i>
                                 Import
                             </button>
@@ -341,11 +345,13 @@
                 urls: {},
                 isProfileModalOpen: false,
                 isImportModalOpen: false,
+                netscapeImportFile: null,
                 loading: {
                     callBookmarksCollections: false,
                     callTagsIndex: false,
                     callBookmarksIndex: false,
                     callAuthLogout: false,
+                    callNetscapeImport: false,
                 },
                 collections: [],
                 tags: [],
@@ -371,6 +377,9 @@
                 },
                 async initData(initParams) {
                     this.urls = initParams.urls;
+                    this.resetAll();
+                },
+                resetAll() {
                     this.callBookmarksCollections();
                     this.callTagsIndex();
                     this.callBookmarksIndex();
@@ -514,6 +523,77 @@
                         this.$store.alert.error('Error');
                     } finally {
                         this.loading.callAuthLogout = false;
+                    }
+                },
+                handleNetscapeImportFile(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const validTypes = ['text/html', 'application/xhtml+xml'];
+                        const extension = file.name.split('.').pop().toLowerCase();
+                        if (validTypes.includes(file.type) || ['html', 'htm'].includes(extension)) {
+                            this.netscapeImportFile = file;
+                            return;
+                        }
+                    }
+
+                    this.$store.alert.error('Please select a valid HTML file (netscape bookmark export)');
+                    this.resetImportForm();
+                    return;
+                },
+                readFileAsText(file) {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = () => reject(reader.error);
+                        reader.readAsText(file);
+                    });
+                },
+                resetImportForm() {
+                    this.$refs.netscapeImportFileInput.value = null;
+                    this.netscapeImportFile = null;
+                },
+                closeImportModal() {
+                    this.isImportModalOpen = false;
+                    this.resetImportForm();
+                },
+                async callNetscapeImport() {
+                    try {
+                        if (this.loading.callNetscapeImport) return;
+
+                        if (!this.netscapeImportFile) {
+                            this.$store.alert.error('Please select a file first');
+                            return;
+                        }
+
+                        this.loading.callNetscapeImport = true;
+
+                        const fileContent = await this.readFileAsText(this.netscapeImportFile);
+
+                        const res = await this.$store.call.callJson(
+                            'POST',
+                            this.urls['api.netscape.import'],
+                            null, {
+                                html: fileContent
+                            },
+                            true
+                        );
+                        const resJson = await res.json();
+
+                        if (res.ok) {
+                            this.$store.alert.success('Bookmarks imported successfully!');
+                            this.closeImportModal();
+                            this.callBookmarksCollections();
+                            this.callTagsIndex();
+                            this.callBookmarksIndex();
+                        } else {
+                            this.$store.alert.error(resJson.message, resJson.errors);
+                        }
+
+                    } catch (err) {
+                        console.log(err);
+                        this.$store.alert.error('Error importing bookmarks: ' + err.message);
+                    } finally {
+                        this.loading.callNetscapeImport = false;
                     }
                 },
             };
