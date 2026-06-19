@@ -16,13 +16,17 @@
 @section('content')
     <div class="container-fluid" x-data="data()" x-init="initData({{ json_encode($params) }})">
         <div class="row py-4">
-            <div class="col-10 col-lg-7 offset-lg-1 d-flex justify-content-between align-items-center">
+            <div class="col-8 col-lg-7 offset-lg-1 d-flex justify-content-between align-items-center">
                 <input type="text" class="form-control rounded-pill py-2 px-4" x-model="filters.q">
             </div>
-            <div
-                class="col-1 col-lg-1 offset-1 offset-lg-2 d-flex justify-content-between align-items-center flex-row-reverse">
-                <button class="btn btn-primary rounded-circle" @click="isProfileModalOpen = !isProfileModalOpen">
-                    A
+            <div class="col-3 col-lg-1 offset-1 offset-lg-2 d-flex justify-content-end align-items-center gap-3">
+                <button class="btn btn-info rounded bg-white text-secondary border border-secondary rounded-4 d-flex flex-row p-2 px-3"
+                    @click="isImportModalOpen = !isImportModalOpen">
+                    <i class="bi bi-pencil me-2"></i>
+                    <span>Create</span>
+                </button>
+                <button class="btn btn-primary rounded-circle" @click="isProfileModalOpen = !isProfileModalOpen"
+                    x-text="$store.auth.user().name.charAt(0).toUpperCase()">
                 </button>
             </div>
         </div>
@@ -281,31 +285,49 @@
         <div class="modal bg-black-50" tabindex="-1" :class="isProfileModalOpen ? 'd-block' : 'd-none'"
             @click="isProfileModalOpen = false">
             <div class="modal-dialog modal-dialog-scrollable">
-                <div class="modal-content bg-profile-modal rounded rounded-5" @click.stop>
+                <div class="modal-content bg-modal rounded rounded-5" @click.stop>
                     <div class="modal-body p-0">
                         <div class="d-flex justify-content-between align-items-center p-3 fs-7">
-                            <span class="text-center flex-grow-1" x-text="$store.auth.user().name">Modal title</span>
+                            <span class="text-center flex-grow-1" x-text="$store.auth.user().name"></span>
                             <i class="bi bi-x-lg cursor-pointer" @click="isProfileModalOpen = false"></i>
                         </div>
                         <div class="d-flex justify-content-center p-3 border-bottom pt-0">
                             <span class="text-center flex-grow-1 fs-3"
                                 x-text="'Hi, ' + $store.auth.user().email + '!'"></span>
                         </div>
-                        <div class="btn-group btn-group-lg p-3 w-100">
+                        <div class="btn-group p-3 w-100">
                             <button type="button"
-                                class="btn btn-outline-secondary rounded-5 d-flex justify-content-center align-items-center gap-2 rounded-end"
-                                @click="console.log(1);" :disabled="loading.callAuthLogout">
-                                <i
-                                    :class="loading.callAuthLogout ? 'spinner-border spinner-border-sm' : 'bi bi-plus-circle'"></i>
-                                Import
-                            </button>
-                            <button type="button"
-                                class="btn btn-outline-secondary rounded-5 d-flex justify-content-center align-items-center gap-2 rounded-start"
+                                class="btn btn-light w-100 rounded-5 d-flex justify-content-center align-items-center gap-2 rounded"
                                 @click="callAuthLogout()" :disabled="loading.callAuthLogout">
                                 <i
                                     :class="loading.callAuthLogout ? 'spinner-border spinner-border-sm' :
                                         'bi bi-box-arrow-right'"></i>
                                 Sign out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal bg-black-50" tabindex="-1" :class="isImportModalOpen ? 'd-block' : 'd-none'"
+            @click="isImportModalOpen = false">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content bg-modal rounded rounded-5" @click.stop>
+                    <div class="modal-body p-0">
+                        <div class="d-flex justify-content-between align-items-center p-3 fs-7">
+                            <span></span>
+                            <i class="bi bi-x-lg cursor-pointer" @click="isImportModalOpen = false"></i>
+                        </div>
+                        <div class="d-flex flex-column justify-content-center p-3 pt-0 gap-3">
+                            <span class="text-center flex-grow-1">Import netscape html file</span>
+                            <input class="form-control" type="file">
+                            <button type="button"
+                                class="btn btn-light w-100 rounded-5 d-flex justify-content-center align-items-center gap-2 rounded"
+                                @click="callAuthLogout()" :disabled="loading.callAuthLogout">
+                                <i
+                                    :class="loading.callAuthLogout ? 'spinner-border spinner-border-sm' :
+                                        'bi bi-file-earmark-arrow-up'"></i>
+                                Import
                             </button>
                         </div>
                     </div>
@@ -318,6 +340,7 @@
             return {
                 urls: {},
                 isProfileModalOpen: false,
+                isImportModalOpen: false,
                 loading: {
                     callBookmarksCollections: false,
                     callTagsIndex: false,
