@@ -177,9 +177,9 @@
                 </div>
             </div>
         </div>
-        <div class="row pt-4">
+        <div class="row pt-3">
             <div class="col-lg-10 offset-lg-1">
-                <div class="d-flex flex-wrap gap-2 pb-5">
+                <div class="d-flex flex-wrap gap-2 pb-3 x-show="tags.length"">
                     <template x-if="loading.callTagsIndex">
                         <div class="fs-7 rounded-pill pe-3 py-2 bg-white text-dark border border-light fw-bold">
                             <div class="spinner-border spinner-border-sm"></div>
@@ -196,25 +196,25 @@
         <div class="row">
             <div class="col-lg-7 offset-lg-1">
                 <template x-if="loading.callBookmarksIndex">
-                    <div class="fs-7 rounded-pill pe-3 py-2 bg-white text-dark border border-light fw-bold pb-5">
+                    <div class="fs-7 rounded-pill pe-3 py-2 bg-white text-dark border border-light fw-bold py-3">
                         <div class="spinner-border spinner-border-sm"></div>
                     </div>
                 </template>
                 <template x-if="!loading.callBookmarksIndex && (bookmarks.length < 1)">
-                    <div class="fs-7 pb-5">
+                    <div class="fs-7 py-3">
                         Your search did not match any documents.
                     </div>
                 </template>
                 <template x-if="!loading.callBookmarksIndex">
                     <template x-for="bookmark in bookmarks">
-                        <div class="d-flex flex-column pb-5">
+                        <div class="d-flex flex-column py-3">
                             <div class="d-flex">
                                 <div class="d-flex flex-grow-0 me-2 justify-content-center align-items-center">
-                                    <img class="w-32" :src="bookmark.url.base_url + '/favicon.ico'">
+                                    <img class="w-32" :src="bookmark.url.favicon">
                                 </div>
                                 <div class="d-flex flex-column justify-content-center">
                                     <div class="fs-7">
-                                        <span class="pe-1" x-text="bookmark.collection"></span>
+                                        <span class="pe-1" x-text="bookmark.collection" x-show="bookmark.collection"></span>
                                         <i class="bi bi-three-dots-vertical"></i>
                                     </div>
                                     <a class="fs-8 text-decoration-none text-dark" x-text="bookmark.url.url" target="_blank" :href="bookmark.url.url"></a>
@@ -258,7 +258,7 @@
             </div>
         </div>
         <template x-if="!loading.callBookmarksIndex && paginator && !(paginator.currentPage == 1 && paginator.onLastPage)">
-            <div class="row pb-5">
+            <div class="row py-3">
                 <div class="col-lg-7 offset-lg-1">
                     <div class="d-flex justify-content-center gap-3">
                         <a x-show="paginator?.currentPage > 2" @click="doFilter(() => filters.page = 1, false)"
