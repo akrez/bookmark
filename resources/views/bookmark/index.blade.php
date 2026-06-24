@@ -212,15 +212,15 @@
                                 <div class="d-flex flex-grow-0 me-2 justify-content-center align-items-center">
                                     <img class="w-32" :src="bookmark.url.favicon">
                                 </div>
-                                <div class="d-flex flex-column justify-content-center">
+                                <div class="d-flex flex-column justify-content-center flex-grow-1 overflow-hidden">
                                     <div class="fs-7">
                                         <span class="pe-1" x-text="bookmark.collection" x-show="bookmark.collection"></span>
                                         <i class="bi bi-three-dots-vertical"></i>
                                     </div>
-                                    <a class="fs-8 text-decoration-none text-dark" x-text="bookmark.url.url" target="_blank" :href="bookmark.url.url"></a>
+                                    <a class="fs-8 text-decoration-none text-dark text-truncate d-block" x-text="bookmark.url.url" target="_blank" :href="bookmark.url.url"></a>
                                 </div>
                             </div>
-                            <a class="fs-5 text-primary text-decoration-none" x-text="bookmark.url.title" target="_blank"
+                            <a class="fs-5 text-primary text-decoration-none lh-sm" x-text="bookmark.url.title" target="_blank"
                                 :href="bookmark.url.url"></a>
                             <div class="fs-7" x-text="bookmark.url.description"></div>
                             <div class="fs-7 text-decoration-underline" x-text="bookmark.note"></div>
