@@ -9,6 +9,7 @@
             'api.bookmarks.index' => route('api.bookmarks.index'),
             'api.auth.logout' => route('api.auth.logout'),
             'api.netscape.import' => route('api.netscape.import'),
+            'api.bookmarks.updateAttribute' => route('api.bookmarks.index'),
         ],
     ];
 @endphp
@@ -204,22 +205,32 @@
                                         target="_blank" :href="bookmark.url.url"></a>
                                     <div class="fs-7">
                                         <span class="pe-1" x-text="bookmark.note" x-show="bookmark.note"></span>
-                                        <span class="text-decoration-underline" x-text="bookmark.collection" x-show="bookmark.collection"></span>
+                                        <span class="text-decoration-underline" x-text="bookmark.collection"
+                                            x-show="bookmark.collection"></span>
                                     </div>
                                     <div class="d-flex gap-3 fs-7">
-                                        <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.read_at }">
+
+                                        <span class="p-0 text-secondary cursor-pointer"
+                                            :class="{ 'fw-bold': bookmark.read_at }"
+                                            @click="callUpdateBookmark(bookmark.id, 'is_read', bookmark.read_at ? false : true)">
                                             <i class="bi bi-bookmark-check pe-1"></i>
-                                            <span x-text="bookmark.read_at ? 'Read' : 'Read'"></span>
+                                            <span x-text="bookmark.read_at ? 'Read' : 'Unread'"></span>
                                         </span>
-                                        <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.shared_at }">
+                                        <span class="p-0 text-secondary cursor-pointer"
+                                            :class="{ 'fw-bold': bookmark.shared_at }"
+                                            @click="callUpdateBookmark(bookmark.id, 'is_shared', bookmark.shared_at ? false : true)">
                                             <i class="bi bi-share pe-1"></i>
                                             <span x-text="bookmark.shared_at ? 'Shared' : 'Share'"></span>
                                         </span>
-                                        <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.favorited_at }">
+                                        <span class="p-0 text-secondary cursor-pointer"
+                                            :class="{ 'fw-bold': bookmark.favorited_at }"
+                                            @click="callUpdateBookmark(bookmark.id, 'is_favorited', bookmark.favorited_at ? false : true)">
                                             <i class="bi bi-heart pe-1"></i>
                                             <span x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
                                         </span>
-                                        <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.archived_at }">
+                                        <span class="p-0 text-secondary cursor-pointer"
+                                            :class="{ 'fw-bold': bookmark.archived_at }"
+                                            @click="callUpdateBookmark(bookmark.id, 'is_archived', bookmark.archived_at ? false : true)">
                                             <i class="bi bi-archive pe-1"></i>
                                             <span x-text="bookmark.archived_at ? 'Archived' : 'Archive'"></span>
                                         </span>
@@ -325,6 +336,7 @@
                     callBookmarksIndex: false,
                     callAuthLogout: false,
                     callNetscapeImport: false,
+                    callUpdateBookmark: false,
                 },
                 collections: [],
                 bookmarks: [],
@@ -535,7 +547,37 @@
                         this.loading.callNetscapeImport = false;
                     }
                 },
-            };
+                async callUpdateBookmark(bookmarkId, fieldName, fieldValue) {
+                    try {
+                        if (this.loading.callUpdateBookmark) return;
+                        this.loading.callUpdateBookmark = true;
+
+                        const data = {};
+                        data[fieldName] = fieldValue;
+                        console.log(fieldValue);
+
+                        const res = await this.$store.call.callJson(
+                            'PATCH', this.urls['api.bookmarks.updateAttribute'] + '/' + bookmarkId, null, data, true
+                        );
+                        const resJson = await res.json();
+
+                        if (res.ok) {
+                            this.$store.alert.success('Bookmarks updated successfully!');
+                            this.closeImportModal();
+                            this.callBookmarksCollections();
+                            this.callBookmarksIndex();
+                        } else {
+                            this.$store.alert.error(resJson.message, resJson.errors);
+                        }
+
+                    } catch (err) {
+                        console.log(err);
+                        this.$store.alert.error('Error');
+                    } finally {
+                        this.loading.callUpdateBookmark = false;
+                    }
+                },
+            }
         }
     </script>
 @endsection
