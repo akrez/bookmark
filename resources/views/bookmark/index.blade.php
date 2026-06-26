@@ -6,7 +6,6 @@
     $params = [
         'urls' => [
             'api.bookmarks.collections' => route('api.bookmarks.collections'),
-            'api.tags.index' => route('api.tags.index'),
             'api.bookmarks.index' => route('api.bookmarks.index'),
             'api.auth.logout' => route('api.auth.logout'),
             'api.netscape.import' => route('api.netscape.import'),
@@ -41,7 +40,7 @@
                         All
                     </div>
                     <div class="fs-7 d-inline-block px-0 py-2 me-3 cursor-pointer user-select-none border-3 border-bottom"
-                        :class="(loading.callBookmarksCollections ? 'd-inline-block' : 'd-none')">
+                        :class="(loading.callBookmarksCollections ? 'd-inline-block border-white' : 'd-none')">
                         <div class="spinner-border spinner-border-sm"></div>
                     </div>
                     <template x-for="collection in collections" x-show="!loading.callBookmarksCollections">
@@ -177,24 +176,8 @@
                 </div>
             </div>
         </div>
-        <div class="row pt-3">
-            <div class="col-lg-10 offset-lg-1">
-                <div class="d-flex flex-wrap gap-2 pb-3 x-show="tags.length"">
-                    <template x-if="loading.callTagsIndex">
-                        <div class="fs-7 rounded-pill pe-3 py-2 bg-white text-dark border border-light fw-bold">
-                            <div class="spinner-border spinner-border-sm"></div>
-                        </div>
-                    </template>
-                    <template x-for="tag in tags" x-show="!loading.callTagsIndex">
-                        <div class="fs-7 rounded-pill px-3 py-2 bg-white text-dark border border-secondary cursor-pointer user-select-none"
-                            :class="{ 'bg-secondary-subtle fw-bold': filters.tags.includes(tag.name) }" x-text="tag.name"
-                            @click="toggleTag(tag.name)"></div>
-                    </template>
-                </div>
-            </div>
-        </div>
         <div class="row">
-            <div class="col-lg-7 offset-lg-1">
+            <div class="col-lg-7 offset-lg-1 pt-3">
                 <template x-if="loading.callBookmarksIndex">
                     <div class="fs-7 rounded-pill pe-3 py-2 bg-white text-dark border border-light fw-bold py-3">
                         <div class="spinner-border spinner-border-sm"></div>
@@ -219,17 +202,10 @@
                                         x-text="bookmark.url.url" target="_blank" :href="bookmark.url.url"></a>
                                     <a class="fs-5 text-primary text-decoration-none lh-sm" x-text="bookmark.url.title"
                                         target="_blank" :href="bookmark.url.url"></a>
-                                    <div class="fs-7 text-decoration-underline" x-text="bookmark.note"></div>
-                                    <template x-if="bookmark.tags">
-                                        <div class="d-flex gap-3 fs-7">
-                                            <template x-for="tag in bookmark.tags">
-                                                <span class="p-0 text-secondary">
-                                                    <i class="bi bi-tag pe-1"></i>
-                                                    <span x-text="tag.name"></span>
-                                                </span>
-                                            </template>
-                                        </div>
-                                    </template>
+                                    <div class="fs-7">
+                                        <span class="pe-1" x-text="bookmark.note" x-show="bookmark.note"></span>
+                                        <span class="text-decoration-underline" x-text="bookmark.collection" x-show="bookmark.collection"></span>
+                                    </div>
                                     <div class="d-flex gap-3 fs-7">
                                         <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.read_at }">
                                             <i class="bi bi-bookmark-check pe-1"></i>
@@ -346,18 +322,15 @@
                 netscapeImportFile: null,
                 loading: {
                     callBookmarksCollections: false,
-                    callTagsIndex: false,
                     callBookmarksIndex: false,
                     callAuthLogout: false,
                     callNetscapeImport: false,
                 },
                 collections: [],
-                tags: [],
                 bookmarks: [],
                 filters: {
                     q: '',
                     collection: null,
-                    tags: [],
                     read: "ALL",
                     archive: "UNARCHIVED",
                     share: "ALL",
@@ -379,7 +352,6 @@
                 },
                 resetAll() {
                     this.callBookmarksCollections();
-                    this.callTagsIndex();
                     this.callBookmarksIndex();
                 },
                 doFilter(func, resetPage = true) {
@@ -419,13 +391,6 @@
                         this.dropdown = null;
                     }
                 },
-                toggleTag(tagName) {
-                    if (this.filters.tags.includes(tagName)) {
-                        this.filters.tags = this.filters.tags.filter(t => t !== tagName)
-                    } else {
-                        this.filters.tags.push(tagName)
-                    }
-                },
                 async callBookmarksCollections() {
                     try {
                         if (this.loading.callBookmarksCollections) return;
@@ -447,29 +412,6 @@
                         this.$store.alert.error('Error');
                     } finally {
                         this.loading.callBookmarksCollections = false;
-                    }
-                },
-                async callTagsIndex() {
-                    try {
-                        if (this.loading.callTagsIndex) return;
-                        this.loading.callTagsIndex = true;
-
-                        const res = await this.$store.call.callJson(
-                            'GET', this.urls['api.tags.index'], null, null, true
-                        );
-                        const resJson = await res.json();
-
-                        if (res.ok) {
-                            this.tags = resJson.data.tags;
-                        } else {
-                            this.$store.alert.error(resJson.message, resJson.errors);
-                        }
-
-                    } catch (err) {
-                        console.log(err);
-                        this.$store.alert.error('Error');
-                    } finally {
-                        this.loading.callTagsIndex = false;
                     }
                 },
                 async callBookmarksIndex() {
@@ -581,7 +523,6 @@
                             this.$store.alert.success('Bookmarks imported successfully!');
                             this.closeImportModal();
                             this.callBookmarksCollections();
-                            this.callTagsIndex();
                             this.callBookmarksIndex();
                         } else {
                             this.$store.alert.error(resJson.message, resJson.errors);
