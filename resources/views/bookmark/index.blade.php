@@ -209,48 +209,46 @@
                     <template x-for="bookmark in bookmarks">
                         <div class="d-flex flex-column py-3">
                             <div class="d-flex">
-                                <div class="d-flex flex-grow-0 me-2 justify-content-center align-items-center">
-                                    <img class="w-32" :src="bookmark.url.favicon">
+                                <div class="d-flex flex-grow-0 me-2 justify-content-center align-items-start">
+                                    <img class="w-32 pt-1" :src="bookmark.url.favicon">
                                 </div>
                                 <div class="d-flex flex-column justify-content-center flex-grow-1 overflow-hidden">
-                                    <div class="fs-7">
-                                        <span class="pe-1" x-text="bookmark.collection" x-show="bookmark.collection"></span>
-                                        <i class="bi bi-three-dots-vertical"></i>
-                                    </div>
-                                    <a class="fs-8 text-decoration-none text-dark text-truncate d-block" x-text="bookmark.url.url" target="_blank" :href="bookmark.url.url"></a>
-                                </div>
-                            </div>
-                            <a class="fs-5 text-primary text-decoration-none lh-sm" x-text="bookmark.url.title" target="_blank"
-                                :href="bookmark.url.url"></a>
-                            <div class="fs-7" x-text="bookmark.url.description"></div>
-                            <div class="fs-7 text-decoration-underline" x-text="bookmark.note"></div>
-                            <template x-if="bookmark.tags">
-                                <div class="d-flex gap-3 fs-7">
-                                    <template x-for="tag in bookmark.tags">
-                                        <span class="p-0 text-secondary">
-                                            <i class="bi bi-tag pe-1"></i>
-                                            <span x-text="tag.name"></span>
-                                        </span>
+                                    <div class="fs-7 text-decoration-none text-truncate d-block"
+                                        x-text="bookmark.url.description" x-show="bookmark.url.description"></div>
+                                    <a class="fs-8 text-decoration-none text-truncate d-block text-dark"
+                                        x-text="bookmark.url.url" target="_blank" :href="bookmark.url.url"></a>
+                                    <a class="fs-5 text-primary text-decoration-none lh-sm" x-text="bookmark.url.title"
+                                        target="_blank" :href="bookmark.url.url"></a>
+                                    <div class="fs-7 text-decoration-underline" x-text="bookmark.note"></div>
+                                    <template x-if="bookmark.tags">
+                                        <div class="d-flex gap-3 fs-7">
+                                            <template x-for="tag in bookmark.tags">
+                                                <span class="p-0 text-secondary">
+                                                    <i class="bi bi-tag pe-1"></i>
+                                                    <span x-text="tag.name"></span>
+                                                </span>
+                                            </template>
+                                        </div>
                                     </template>
+                                    <div class="d-flex gap-3 fs-7">
+                                        <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.read_at }">
+                                            <i class="bi bi-bookmark-check pe-1"></i>
+                                            <span x-text="bookmark.read_at ? 'Read' : 'Read'"></span>
+                                        </span>
+                                        <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.shared_at }">
+                                            <i class="bi bi-share pe-1"></i>
+                                            <span x-text="bookmark.shared_at ? 'Shared' : 'Share'"></span>
+                                        </span>
+                                        <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.favorited_at }">
+                                            <i class="bi bi-heart pe-1"></i>
+                                            <span x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
+                                        </span>
+                                        <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.archived_at }">
+                                            <i class="bi bi-archive pe-1"></i>
+                                            <span x-text="bookmark.archived_at ? 'Archived' : 'Archive'"></span>
+                                        </span>
+                                    </div>
                                 </div>
-                            </template>
-                            <div class="d-flex gap-3 fs-7">
-                                <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.read_at }">
-                                    <i class="bi bi-bookmark-check pe-1"></i>
-                                    <span x-text="bookmark.read_at ? 'Read' : 'Read'"></span>
-                                </span>
-                                <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.shared_at }">
-                                    <i class="bi bi-share pe-1"></i>
-                                    <span x-text="bookmark.shared_at ? 'Shared' : 'Share'"></span>
-                                </span>
-                                <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.favorited_at }">
-                                    <i class="bi bi-heart pe-1"></i>
-                                    <span x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
-                                </span>
-                                <span class="p-0 text-secondary" :class="{ 'fw-bold': bookmark.archived_at }">
-                                    <i class="bi bi-archive pe-1"></i>
-                                    <span x-text="bookmark.archived_at ? 'Archived' : 'Archive'"></span>
-                                </span>
                             </div>
                         </div>
                     </template>
