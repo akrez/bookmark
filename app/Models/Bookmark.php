@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Observers\BookmarkObserver;
 use Database\Factories\BookmarkFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,12 +18,9 @@ class Bookmark extends Model
     protected $table = 'bookmarks';
 
     protected $fillable = [
-        'url',
-        'base_url',
+        'url_id',
         'collection',
-        'title',
-        'description',
-        'notes',
+        'note',
         'read_at',
         'archived_at',
         'shared_at',
@@ -39,14 +35,14 @@ class Bookmark extends Model
         'favorited_at' => 'datetime',
     ];
 
-    protected static function booted(): void
-    {
-        Bookmark::observe(BookmarkObserver::class);
-    }
-
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class);
+    }
+
+    public function url(): BelongsTo
+    {
+        return $this->belongsTo(Url::class);
     }
 
     public function user(): BelongsTo
