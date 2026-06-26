@@ -5,7 +5,7 @@ namespace App\Http\Resources\Tag;
 use App\Http\Resources\JsonResource;
 use Illuminate\Http\Request;
 
-class TagResource extends JsonResource
+class TagNameResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,11 +17,7 @@ class TagResource extends JsonResource
         $resource = $this->resource;
 
         return [
-            'id' => $resource->id,
             'name' => $resource->name,
-            'tag_count' => $resource->tag_count,
-            'updated_at' => $resource?->updated_at?->toIso8601String(),
-            'created_at' => $resource?->created_at?->toIso8601String(),
         ];
     }
 }
