@@ -147,29 +147,29 @@
                     </ul>
 
                     <div class="fs-7 d-inline-block px-0 py-2 ms-3 fw-bold fw-semibold cursor-pointer user-select-none border-3 border-bottom dropdown-toggle"
-                        :class="(filters.delete != 'ALL' ? 'border-dark fw-bold' : 'border-white')"
-                        @click="setDropdown('delete')">
-                        Delete
+                        :class="(filters.archive != 'ALL' ? 'border-dark fw-bold' : 'border-white')"
+                        @click="setDropdown('archive')">
+                        Archive
                     </div>
-                    <ul class="dropdown-menu w-100" :class="getDropdownClass('delete')">
+                    <ul class="dropdown-menu w-100" :class="getDropdownClass('archive')">
                         <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.delete = 'ALL')">
+                            @click="doFilter(() => filters.archive = 'ALL')">
                             <div>All</div>
-                            <template x-if="filters.delete == 'ALL'">
+                            <template x-if="filters.archive == 'ALL'">
                                 <i class="bi bi-check2"></i>
                             </template>
                         </li>
                         <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.delete = 'DELETED')">
-                            <div>Deleted</div>
-                            <template x-if="filters.delete == 'DELETED'">
+                            @click="doFilter(() => filters.archive = 'ARCHIVED')">
+                            <div>Archived</div>
+                            <template x-if="filters.archive == 'ARCHIVED'">
                                 <i class="bi bi-check2"></i>
                             </template>
                         </li>
                         <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.delete = 'UNDELETED')">
-                            <div>UnDeleted</div>
-                            <template x-if="filters.delete == 'UNDELETED'">
+                            @click="doFilter(() => filters.archive = 'UNARCHIVED')">
+                            <div>UnArchived</div>
+                            <template x-if="filters.archive == 'UNARCHIVED'">
                                 <i class="bi bi-check2"></i>
                             </template>
                         </li>
@@ -237,13 +237,13 @@
                                                     x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
                                             </span>
                                             <span class="p-0 text-secondary cursor-pointer d-flex align-items-center"
-                                                :class="{ 'fw-bold': bookmark.deleted_at }"
-                                                @click="callUpdateBookmark(bookmark.id, 'is_deleted', bookmark.deleted_at ? false : true)">
+                                                :class="{ 'fw-bold': bookmark.archived_at }"
+                                                @click="callUpdateBookmark(bookmark.id, 'is_archived', bookmark.archived_at ? false : true)">
                                                 <i
-                                                    :class="loading.callUpdateBookmark == bookmark.id + '-is_deleted' ?
-                                                        'spinner-border spinner-border-sm' : 'bi bi-trash'"></i>
+                                                    :class="loading.callUpdateBookmark == bookmark.id + '-is_archived' ?
+                                                        'spinner-border spinner-border-sm' : 'bi bi-archive'"></i>
                                                 <span class="ps-1"
-                                                    x-text="bookmark.deleted_at ? 'Deleted' : 'Delete'"></span>
+                                                    x-text="bookmark.archived_at ? 'Archived' : 'Archive'"></span>
                                             </span>
                                             <span class="p-0 text-secondary cursor-pointer d-flex align-items-center"
                                                 @click="collectionModalId = ((collectionModalId && collectionModalId == bookmark.id) ? null : bookmark.id)">
@@ -291,9 +291,9 @@
                                 <i class="bi bi-chevron-left"></i>
                             </a>
                             <template x-for="n in pageRange()">
-                                <span @click="n == '...' ? '' : doFilter(() => filters.page = n, false)"
-                                    class="text-decoration-none" x-text="n"
-                                    :class="{ 'cursor-pointer text-primary': paginator?.currentPage != n && '...' != n }"></span>
+                                <span @click="doFilter(() => filters.page = n, false)" class="text-decoration-none"
+                                    x-text="n"
+                                    :class="{ 'cursor-pointer text-primary': paginator?.currentPage != n }"></span>
                             </template>
                             <a x-show="!paginator?.onLastPage"
                                 @click="doFilter(() =>filters.page = paginator?.currentPage + 1, false)"
@@ -394,7 +394,7 @@
                     q: '',
                     collection: null,
                     read: "ALL",
-                    delete: "UNDELETED",
+                    archive: "UNARCHIVED",
                     share: "ALL",
                     favorite: "ALL",
                     page: 1
@@ -426,7 +426,7 @@
                         this.filters.page = 1;
                     }
                 },
-                pageRange(maxDisplayPages = 10) {
+                pageRange(sideCount = 5) {
                     const {
                         perPage,
                         currentPage,
@@ -434,55 +434,30 @@
                         onLastPage
                     } = this.paginator;
 
-                    // محاسبه تعداد کل صفحات
                     const totalPages = Math.ceil(total / perPage);
 
-                    // اگر تعداد کل صفحات کمتر یا مساوی maxDisplayPages باشد، همه را نمایش بده
-                    if (totalPages <= maxDisplayPages) {
-                        return Array.from({
-                            length: totalPages
-                        }, (_, i) => i + 1);
+                    let minAva = Math.max(1, currentPage - sideCount);
+                    let maxAva = Math.min(totalPages, currentPage + sideCount);
+
+                    let start = minAva;
+                    let end = maxAva;
+
+                    if (1 == minAva && maxAva == totalPages) {
+                        //
+                    } else if (1 == minAva) {
+                        start = minAva;
+                        end = (2 * sideCount) + 1;
+                    } else if (maxAva == totalPages) {
+                        start = maxAva - (2 * sideCount);
+                        end = maxAva;
+                    } else {
+                        //
                     }
 
                     const pages = [];
-                    const maxVisible = maxDisplayPages - 2; // برای الیپسیس‌ها
-
-                    // صفحه اول همیشه نمایش داده می‌شود
-                    pages.push(1);
-
-                    // محاسبه محدوده نمایش
-                    let start = Math.max(2, currentPage - Math.floor(maxVisible / 2));
-                    let end = Math.min(totalPages - 1, currentPage + Math.floor(maxVisible / 2));
-
-                    // تنظیم برای حالت‌های خاص
-                    if (currentPage <= Math.floor(maxVisible / 2) + 1) {
-                        end = Math.min(totalPages - 1, maxVisible);
-                    }
-
-                    if (currentPage >= totalPages - Math.floor(maxVisible / 2)) {
-                        start = Math.max(2, totalPages - maxVisible + 1);
-                    }
-
-                    // الیپسیس اول
-                    if (start > 2) {
-                        pages.push('...');
-                    }
-
-                    // صفحات میانی
                     for (let i = start; i <= end; i++) {
                         pages.push(i);
                     }
-
-                    // الیپسیس دوم
-                    if (end < totalPages - 1) {
-                        pages.push('...');
-                    }
-
-                    // صفحه آخر همیشه نمایش داده می‌شود
-                    if (totalPages > 1) {
-                        pages.push(totalPages);
-                    }
-
                     return pages;
                 },
                 getDropdownClass(dropdown) {
