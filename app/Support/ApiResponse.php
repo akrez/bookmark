@@ -111,6 +111,7 @@ class ApiResponse implements Responsable
                 'perPage' => $paginator->perPage(),
                 'currentPage' => $paginator->currentPage(),
                 'options' => $paginator->getOptions(),
+                'onLastPage' => $paginator->onLastPage(),
                 'total' => ($paginator instanceof LengthAwarePaginator ? $paginator->total() : null),
             ],
         ] : null);
@@ -156,6 +157,7 @@ class ApiResponse implements Responsable
                 'perPage' => $this->paginator['parameters']['perPage'],
                 'currentPage' => $this->paginator['parameters']['currentPage'],
                 'total' => $this->paginator['parameters']['total'],
+                'onLastPage' => $this->paginator['parameters']['onLastPage'],
             ] : null),
         ], $this->getStatus());
     }
