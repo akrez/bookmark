@@ -291,9 +291,9 @@
                                 <i class="bi bi-chevron-left"></i>
                             </a>
                             <template x-for="n in pageRange()">
-                                <span @click="doFilter(() => filters.page = n, false)" class="text-decoration-none"
-                                    x-text="n"
-                                    :class="{ 'cursor-pointer text-primary': paginator?.currentPage != n }"></span>
+                                <span @click="n == '...' ? '' : doFilter(() => filters.page = n, false)"
+                                    class="text-decoration-none" x-text="n"
+                                    :class="{ 'cursor-pointer text-primary': paginator?.currentPage != n && '...' != n }"></span>
                             </template>
                             <a x-show="!paginator?.onLastPage"
                                 @click="doFilter(() =>filters.page = paginator?.currentPage + 1, false)"
@@ -426,23 +426,64 @@
                         this.filters.page = 1;
                     }
                 },
-                pageRange(sideCount = 2) {
-                    let s = this.paginator.currentPage - sideCount;
-                    if (s < 1) s = 1;
+                pageRange(maxDisplayPages = 10) {
+                    const {
+                        perPage,
+                        currentPage,
+                        total,
+                        onLastPage
+                    } = this.paginator;
 
-                    let e = s + (sideCount * 2);
+                    // محاسبه تعداد کل صفحات
+                    const totalPages = Math.ceil(total / perPage);
 
-                    const arr = [];
-                    for (let i = s; i <= e; i++) {
-                        if (this.paginator.onLastPage) {
-                            if (i <= this.paginator.currentPage) {
-                                arr.push(i);
-                            }
-                        } else {
-                            arr.push(i);
-                        }
-                    };
-                    return arr;
+                    // اگر تعداد کل صفحات کمتر یا مساوی maxDisplayPages باشد، همه را نمایش بده
+                    if (totalPages <= maxDisplayPages) {
+                        return Array.from({
+                            length: totalPages
+                        }, (_, i) => i + 1);
+                    }
+
+                    const pages = [];
+                    const maxVisible = maxDisplayPages - 2; // برای الیپسیس‌ها
+
+                    // صفحه اول همیشه نمایش داده می‌شود
+                    pages.push(1);
+
+                    // محاسبه محدوده نمایش
+                    let start = Math.max(2, currentPage - Math.floor(maxVisible / 2));
+                    let end = Math.min(totalPages - 1, currentPage + Math.floor(maxVisible / 2));
+
+                    // تنظیم برای حالت‌های خاص
+                    if (currentPage <= Math.floor(maxVisible / 2) + 1) {
+                        end = Math.min(totalPages - 1, maxVisible);
+                    }
+
+                    if (currentPage >= totalPages - Math.floor(maxVisible / 2)) {
+                        start = Math.max(2, totalPages - maxVisible + 1);
+                    }
+
+                    // الیپسیس اول
+                    if (start > 2) {
+                        pages.push('...');
+                    }
+
+                    // صفحات میانی
+                    for (let i = start; i <= end; i++) {
+                        pages.push(i);
+                    }
+
+                    // الیپسیس دوم
+                    if (end < totalPages - 1) {
+                        pages.push('...');
+                    }
+
+                    // صفحه آخر همیشه نمایش داده می‌شود
+                    if (totalPages > 1) {
+                        pages.push(totalPages);
+                    }
+
+                    return pages;
                 },
                 getDropdownClass(dropdown) {
                     if (this.dropdown == dropdown) {
