@@ -195,7 +195,8 @@
                         <div class="d-flex flex-column py-3">
                             <div class="d-flex">
                                 <div class="d-flex flex-grow-0 me-2 justify-content-center align-items-start">
-                                    <img class="w-32 pt-1" :src="bookmark.url.favicon ?? bookmark.url.base_url + '/favicon.ico'">
+                                    <img class="w-32 pt-1"
+                                        :src="bookmark.url.favicon ?? bookmark.url.base_url + '/favicon.ico'">
                                 </div>
                                 <div class="d-flex flex-column justify-content-center flex-grow-1 overflow-hidden">
                                     <div class="fs-7 text-decoration-none text-truncate d-block"
@@ -206,36 +207,70 @@
                                         target="_blank" :href="bookmark.url.url"></a>
                                     <div class="fs-7">
                                         <span class="pe-1" x-text="bookmark.note" x-show="bookmark.note"></span>
-                                        <span class="text-decoration-underline" x-text="bookmark.collection"
-                                            x-show="bookmark.collection"></span>
                                     </div>
                                     <div class="d-flex gap-3 fs-7">
-
-                                        <span class="p-0 text-secondary cursor-pointer"
+                                        <span class="p-0 text-secondary cursor-pointer d-flex align-items-center"
                                             :class="{ 'fw-bold': bookmark.read_at }"
                                             @click="callUpdateBookmark(bookmark.id, 'is_read', bookmark.read_at ? false : true)">
-                                            <i class="bi bi-bookmark-check pe-1"></i>
-                                            <span x-text="bookmark.read_at ? 'Read' : 'Unread'"></span>
+                                            <i
+                                                :class="loading.callUpdateBookmark == bookmark.id + '-is_read' ?
+                                                    'spinner-border spinner-border-sm' : 'bi-bookmark-check'"></i>
+                                            <span class="ps-1" x-text="bookmark.read_at ? 'Read' : 'Unread'"></span>
                                         </span>
-                                        <span class="p-0 text-secondary cursor-pointer"
+                                        <span class="p-0 text-secondary cursor-pointer d-flex align-items-center"
                                             :class="{ 'fw-bold': bookmark.shared_at }"
                                             @click="callUpdateBookmark(bookmark.id, 'is_shared', bookmark.shared_at ? false : true)">
-                                            <i class="bi bi-share pe-1"></i>
-                                            <span x-text="bookmark.shared_at ? 'Shared' : 'Share'"></span>
+                                            <i
+                                                :class="loading.callUpdateBookmark == bookmark.id + '-is_shared' ?
+                                                    'spinner-border spinner-border-sm' : 'bi bi-share'"></i>
+                                            <span class="ps-1" x-text="bookmark.shared_at ? 'Shared' : 'Share'"></span>
                                         </span>
-                                        <span class="p-0 text-secondary cursor-pointer"
+                                        <span class="p-0 text-secondary cursor-pointer d-flex align-items-center"
                                             :class="{ 'fw-bold': bookmark.favorited_at }"
                                             @click="callUpdateBookmark(bookmark.id, 'is_favorited', bookmark.favorited_at ? false : true)">
-                                            <i class="bi bi-heart pe-1"></i>
-                                            <span x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
+                                            <i
+                                                :class="loading.callUpdateBookmark == bookmark.id + '-is_favorited' ?
+                                                    'spinner-border spinner-border-sm' : 'bi bi-heart'"></i>
+                                            <span class="ps-1"
+                                                x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
                                         </span>
-                                        <span class="p-0 text-secondary cursor-pointer"
+                                        <span class="p-0 text-secondary cursor-pointer d-flex align-items-center"
                                             :class="{ 'fw-bold': bookmark.deleted_at }"
                                             @click="callUpdateBookmark(bookmark.id, 'is_deleted', bookmark.deleted_at ? false : true)">
-                                            <i class="bi bi-trash pe-1"></i>
-                                            <span x-text="bookmark.deleted_at ? 'Deleted' : 'Delete'"></span>
+                                            <i
+                                                :class="loading.callUpdateBookmark == bookmark.id + '-is_deleted' ?
+                                                    'spinner-border spinner-border-sm' : 'bi bi-trash'"></i>
+                                            <span class="ps-1"
+                                                x-text="bookmark.deleted_at ? 'Deleted' : 'Delete'"></span>
+                                        </span>
+                                        <span class="p-0 text-secondary cursor-pointer d-flex align-items-center"
+                                            @click="collectionModalId = ((collectionModalId && collectionModalId == bookmark.id) ? null : bookmark.id)">
+                                            <i
+                                                :class="loading.callUpdateBookmark == bookmark.id + '-collection' ?
+                                                    'spinner-border spinner-border-sm' : 'bi bi-collection'"></i>
+                                            <span class="ps-1" x-text="bookmark.collection"></span>
                                         </span>
                                     </div>
+                                    <template x-if="collectionModalId == bookmark.id">
+                                        <div
+                                            class="d-flex flex-column justify-content-center p-2 gap-2 rounded bg-white text-secondary border border-secondary-subtle rounded-2">
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" class="form-control"
+                                                    x-model="collectionForms[bookmark.id]">
+                                                <button class="btn text-secondary border border-secondary-subtle"
+                                                    @click="callUpdateBookmark(bookmark.id, 'collection',  collectionForms[bookmark.id])">
+                                                    Submit
+                                                </button>
+                                            </div>
+                                            <div>
+                                                <template x-for="collection in collections">
+                                                    <span class="text-decoration-underline cursor-pointer me-1"
+                                                        x-text="collection.name"
+                                                        @click="callUpdateBookmark(bookmark.id, 'collection', collection.name)"></span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
                                 </div>
                             </div>
                         </div>
@@ -343,13 +378,14 @@
                 urls: {},
                 isProfileModalOpen: false,
                 isImportModalOpen: false,
+                collectionModalId: null,
                 netscapeImportFile: null,
                 loading: {
                     callBookmarksCollections: false,
                     callBookmarksIndex: false,
                     callAuthLogout: false,
                     callNetscapeImport: false,
-                    callUpdateBookmark: false,
+                    callUpdateBookmark: null,
                     callStoreBookmark: false,
                 },
                 collections: [],
@@ -365,6 +401,7 @@
                 },
                 dropdown: null,
                 paginator: null,
+                collectionForms: {},
                 createForm: {
                     url: null,
                 },
@@ -460,6 +497,11 @@
                         if (res.ok) {
                             this.bookmarks = resJson.data.bookmarks;
                             this.paginator = resJson.paginator;
+                            //
+                            this.collectionForms = {};
+                            this.bookmarks.forEach(bookmark => {
+                                this.collectionForms[bookmark.id] = bookmark.collection;
+                            });
                         } else {
                             this.$store.alert.error(resJson.message, resJson.errors);
                         }
@@ -568,7 +610,7 @@
                 async callUpdateBookmark(bookmarkId, fieldName, fieldValue) {
                     try {
                         if (this.loading.callUpdateBookmark) return;
-                        this.loading.callUpdateBookmark = true;
+                        this.loading.callUpdateBookmark = bookmarkId + '-' + fieldName;
 
                         const data = {};
                         data[fieldName] = fieldValue;
@@ -592,7 +634,7 @@
                         console.log(err);
                         this.$store.alert.error('Error');
                     } finally {
-                        this.loading.callUpdateBookmark = false;
+                        this.loading.callUpdateBookmark = null;
                     }
                 },
                 async callStoreBookmark() {
