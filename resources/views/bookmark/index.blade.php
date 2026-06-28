@@ -10,6 +10,7 @@
             'api.auth.logout' => route('api.auth.logout'),
             'api.netscape.import' => route('api.netscape.import'),
             'api.bookmarks.updateAttribute' => route('api.bookmarks.index'),
+            'api.bookmarks.store' => route('api.bookmarks.index'),
         ],
     ];
 @endphp
@@ -22,10 +23,10 @@
             </div>
             <div class="col-3 col-lg-1 offset-1 offset-lg-2 d-flex justify-content-end align-items-center gap-3">
                 <button
-                    class="btn rounded bg-white text-secondary border border-secondary rounded-4 d-flex flex-row p-2 px-3"
+                    class="btn rounded bg-white text-secondary border border border-secondary-subtle rounded-4 d-flex flex-row p-2 px-3"
                     @click="isImportModalOpen ? closeImportModal() : (isImportModalOpen  = true)">
-                    <i class="bi bi-pencil me-2"></i>
-                    <span>Create</span>
+                    <i class="bi bi-pencil"></i>
+                    <span class="ms-3">Create</span>
                 </button>
                 <button class="btn btn-primary rounded-circle" @click="isProfileModalOpen = !isProfileModalOpen"
                     x-text="$store.auth.user().name.charAt(0).toUpperCase()">
@@ -146,29 +147,29 @@
                     </ul>
 
                     <div class="fs-7 d-inline-block px-0 py-2 ms-3 fw-bold fw-semibold cursor-pointer user-select-none border-3 border-bottom dropdown-toggle"
-                        :class="(filters.archive != 'ALL' ? 'border-dark fw-bold' : 'border-white')"
-                        @click="setDropdown('archive')">
-                        Archive
+                        :class="(filters.delete != 'ALL' ? 'border-dark fw-bold' : 'border-white')"
+                        @click="setDropdown('delete')">
+                        Delete
                     </div>
-                    <ul class="dropdown-menu w-100" :class="getDropdownClass('archive')">
+                    <ul class="dropdown-menu w-100" :class="getDropdownClass('delete')">
                         <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.archive = 'ALL')">
+                            @click="doFilter(() => filters.delete = 'ALL')">
                             <div>All</div>
-                            <template x-if="filters.archive == 'ALL'">
+                            <template x-if="filters.delete == 'ALL'">
                                 <i class="bi bi-check2"></i>
                             </template>
                         </li>
                         <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.archive = 'ARCHIVED')">
-                            <div>Archived</div>
-                            <template x-if="filters.archive == 'ARCHIVED'">
+                            @click="doFilter(() => filters.delete = 'DELETED')">
+                            <div>Deleted</div>
+                            <template x-if="filters.delete == 'DELETED'">
                                 <i class="bi bi-check2"></i>
                             </template>
                         </li>
                         <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.archive = 'UNARCHIVED')">
-                            <div>UnArchived</div>
-                            <template x-if="filters.archive == 'UNARCHIVED'">
+                            @click="doFilter(() => filters.delete = 'UNDELETED')">
+                            <div>UnDeleted</div>
+                            <template x-if="filters.delete == 'UNDELETED'">
                                 <i class="bi bi-check2"></i>
                             </template>
                         </li>
@@ -194,7 +195,7 @@
                         <div class="d-flex flex-column py-3">
                             <div class="d-flex">
                                 <div class="d-flex flex-grow-0 me-2 justify-content-center align-items-start">
-                                    <img class="w-32 pt-1" :src="bookmark.url.favicon">
+                                    <img class="w-32 pt-1" :src="bookmark.url.favicon ?? bookmark.url.base_url + '/favicon.ico'">
                                 </div>
                                 <div class="d-flex flex-column justify-content-center flex-grow-1 overflow-hidden">
                                     <div class="fs-7 text-decoration-none text-truncate d-block"
@@ -229,10 +230,10 @@
                                             <span x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
                                         </span>
                                         <span class="p-0 text-secondary cursor-pointer"
-                                            :class="{ 'fw-bold': bookmark.archived_at }"
-                                            @click="callUpdateBookmark(bookmark.id, 'is_archived', bookmark.archived_at ? false : true)">
-                                            <i class="bi bi-archive pe-1"></i>
-                                            <span x-text="bookmark.archived_at ? 'Archived' : 'Archive'"></span>
+                                            :class="{ 'fw-bold': bookmark.deleted_at }"
+                                            @click="callUpdateBookmark(bookmark.id, 'is_deleted', bookmark.deleted_at ? false : true)">
+                                            <i class="bi bi-trash pe-1"></i>
+                                            <span x-text="bookmark.deleted_at ? 'Deleted' : 'Delete'"></span>
                                         </span>
                                     </div>
                                 </div>
@@ -305,6 +306,18 @@
                             <span></span>
                             <i class="bi bi-x-lg cursor-pointer" @click="closeImportModal()"></i>
                         </div>
+                        <div class="d-flex flex-column justify-content-center p-3 py-0 gap-3">
+                            <span class="text-center flex-grow-1">Create new bookmark</span>
+                            <input class="form-control" x-model="createForm.url">
+                            <button type="button"
+                                class="btn btn-light w-100 rounded-5 d-flex justify-content-center align-items-center gap-2 rounded"
+                                @click="callStoreBookmark()" :disabled="loading.callStoreBookmark">
+                                <i
+                                    :class="loading.callStoreBookmark ? 'spinner-border spinner-border-sm' : 'bi bi-plus-lg'"></i>
+                                Create
+                            </button>
+                        </div>
+                        <hr class="border-secondary">
                         <div class="d-flex flex-column justify-content-center p-3 pt-0 gap-3">
                             <span class="text-center flex-grow-1">Import netscape html file</span>
                             <input class="form-control" type="file" accept=".html,.htm"
@@ -337,6 +350,7 @@
                     callAuthLogout: false,
                     callNetscapeImport: false,
                     callUpdateBookmark: false,
+                    callStoreBookmark: false,
                 },
                 collections: [],
                 bookmarks: [],
@@ -344,13 +358,16 @@
                     q: '',
                     collection: null,
                     read: "ALL",
-                    archive: "UNARCHIVED",
+                    delete: "UNDELETED",
                     share: "ALL",
                     favorite: "ALL",
                     page: 1
                 },
                 dropdown: null,
                 paginator: null,
+                createForm: {
+                    url: null,
+                },
                 init() {
                     this.$watch('filters', () => {
                         this.callBookmarksIndex();
@@ -506,6 +523,7 @@
                 },
                 closeImportModal() {
                     this.isImportModalOpen = false;
+                    this.createForm.url = null;
                     this.resetImportForm();
                 },
                 async callNetscapeImport() {
@@ -575,6 +593,32 @@
                         this.$store.alert.error('Error');
                     } finally {
                         this.loading.callUpdateBookmark = false;
+                    }
+                },
+                async callStoreBookmark() {
+                    try {
+                        if (this.loading.callStoreBookmark) return;
+                        this.loading.callStoreBookmark = true;
+
+                        const res = await this.$store.call.callJson(
+                            'POST', this.urls['api.bookmarks.store'], null, this.createForm, true
+                        );
+                        const resJson = await res.json();
+
+                        if (res.ok) {
+                            this.$store.alert.success('Bookmarks created successfully!');
+                            this.closeImportModal();
+                            this.callBookmarksCollections();
+                            this.callBookmarksIndex();
+                        } else {
+                            this.$store.alert.error(resJson.message, resJson.errors);
+                        }
+
+                    } catch (err) {
+                        console.log(err);
+                        this.$store.alert.error('Error');
+                    } finally {
+                        this.loading.callStoreBookmark = false;
                     }
                 },
             }
