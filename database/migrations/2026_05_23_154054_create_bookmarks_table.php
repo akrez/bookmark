@@ -10,12 +10,9 @@ return new class extends Migration
     {
         Schema::create('bookmarks', function (Blueprint $table) {
             $table->id();
-            $table->string('url', 2048);
-            $table->string('base_url', 512)->nullable();
-            $table->string('collection', 512)->nullable();
-            $table->string('title', 512)->nullable();
-            $table->text('description')->nullable();
-            $table->text('notes')->nullable();
+            $table->foreignId('url_id')->constrained('urls')->cascadeOnDelete();
+            $table->string('collection', 512)->index()->nullable();
+            $table->text('note')->nullable();
             $table->timestamp('read_at')->nullable();
             $table->timestamp('archived_at')->nullable();
             $table->timestamp('shared_at')->nullable();
