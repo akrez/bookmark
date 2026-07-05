@@ -25,7 +25,7 @@
             <div class="col-4 col-lg-1 offset-1 offset-lg-2 d-flex justify-content-end align-items-center gap-3">
                 <button
                     class="btn rounded bg-white text-secondary border border border-secondary-subtle rounded-4 d-flex flex-row p-2 px-3"
-                    @click="isImportModalOpen ? closeImportModal() : (isImportModalOpen  = true)">
+                    @click="isCreateModalOpen ? closeCreateModal() : (isCreateModalOpen  = true)">
                     <i class="bi bi-pencil"></i>
                     <span class="ms-3">Create</span>
                 </button>
@@ -334,14 +334,14 @@
                 </div>
             </div>
         </div>
-        <div class="modal bg-black-50" tabindex="-1" :class="isImportModalOpen ? 'd-block' : 'd-none'"
-            @click="closeImportModal()">
+        <div class="modal bg-black-50" tabindex="-1" :class="isCreateModalOpen ? 'd-block' : 'd-none'"
+            @click="closeCreateModal()">
             <div class="modal-dialog modal-dialog-scrollable">
                 <div class="modal-content bg-modal rounded rounded-5" @click.stop>
                     <div class="modal-body p-0">
                         <div class="d-flex justify-content-between align-items-center p-3 fs-7">
                             <span class="text-center flex-grow-1">Create new bookmark</span>
-                            <i class="bi bi-x-lg cursor-pointer" @click="closeImportModal()"></i>
+                            <i class="bi bi-x-lg cursor-pointer" @click="closeCreateModal()"></i>
                         </div>
                         <div class="d-flex flex-column justify-content-center p-3 py-0 gap-3">
                             <input class="form-control" x-model="createForm.url">
@@ -390,7 +390,7 @@
             return {
                 urls: {},
                 isProfileModalOpen: false,
-                isImportModalOpen: false,
+                isCreateModalOpen: false,
                 collectionModalId: null,
                 netscapeImportFile: null,
                 loading: {
@@ -443,7 +443,7 @@
                         this.filters.page = 1;
                     }
                     this.collectionModalId = null,
-                    this.closeImportModal();
+                    this.closeCreateModal();
                     this.bookmarks = [];
                     await this.callBookmarksIndex();
                     if (! resetPage) {
@@ -603,8 +603,8 @@
                     this.$refs.netscapeImportFileInput.value = null;
                     this.netscapeImportFile = null;
                 },
-                closeImportModal() {
-                    this.isImportModalOpen = false;
+                closeCreateModal() {
+                    this.isCreateModalOpen = false;
                     this.createForm.url = null;
                     this.resetImportForm();
                 },
