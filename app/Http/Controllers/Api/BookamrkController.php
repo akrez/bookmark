@@ -54,9 +54,4 @@ class BookamrkController extends Controller
     {
         return BookmarkService::new()->updateAttribute($id, $request->user()->id, $request->post());
     }
-
-    public function storeTags(Request $request, int $id)
-    {
-        return BookmarkService::new()->syncTags($id, $request->user()->id, $request->post());
-    }
 }

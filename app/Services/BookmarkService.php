@@ -6,6 +6,7 @@ use App\Enums\BookmarkArchiveEnum;
 use App\Enums\BookmarkFavoriteEnum;
 use App\Enums\BookmarkReadEnum;
 use App\Enums\BookmarkShareEnum;
+use App\Http\Resources\Bookmark\BookmarkCollection;
 use App\Http\Resources\Bookmark\BookmarkCollectionResource;
 use App\Http\Resources\Bookmark\BookmarkResource;
 use App\Models\Bookmark;
@@ -17,18 +18,12 @@ use Illuminate\Validation\Rule;
 
 class BookmarkService extends Service
 {
-    public function index(int $userId, array $payload)
+    public function index(int $userId, array $payload, bool $paginated = true)
     {
         $payload['page'] = empty($payload['page']) ? 1 : intval($payload['page']);
-        $payload['tags'] = empty($payload['tags']) ? [] : collect(explode(',', $payload['tags']))
-            ->map(fn ($item) => trim($item))
-            ->filter()
-            ->values()
-            ->toArray();
         $validator = Validator::make($payload, [
             'collection' => ['sometimes', 'nullable', 'string', 'max:512'],
             'q' => ['sometimes', 'nullable', 'string'],
-            'tags' => ['sometimes', 'nullable', 'array'],
             'archive' => ['sometimes', Rule::in(BookmarkArchiveEnum::names())],
             'share' => ['sometimes', Rule::in(BookmarkShareEnum::names())],
             'favorite' => ['sometimes', Rule::in(BookmarkFavoriteEnum::names())],
@@ -42,7 +37,7 @@ class BookmarkService extends Service
 
         $query = Bookmark::query()
             ->where('user_id', $userId)
-            ->with(['url', 'tags']);
+            ->with(['url']);
 
         $query->when(array_key_exists('read', $validated), function ($query) use ($validated) {
             if ($validated['read'] == BookmarkReadEnum::UNREAD->name) {
@@ -93,18 +88,15 @@ class BookmarkService extends Service
             });
         });
 
-        $query->when(array_key_exists('tags', $validated) && $validated['tags'], function ($query) use ($validated) {
-            $tagNames = $validated['tags'];
-            $query->whereHas('tags', function ($subQuery) use ($tagNames) {
-                $subQuery->whereIn('tags.name', $tagNames);
-            });
-        });
+        $query = $query->orderByRaw('`favorited_at` IS NULL, `favorited_at` DESC, `created_at` DESC, `id` ASC');
 
-        $bookmarks = $query->simplePaginate(page: $validated['page'], perPage: 25);
+        $bookmarks = $paginated ?
+            $query->paginate(page: $validated['page'], perPage: 20) :
+            $query->get();
 
         return ApiResponse::make(200)->data([
-            'bookmarks' => BookmarkResource::collection($bookmarks)->toArray(request()),
-        ])->paginator($bookmarks);
+            'bookmarks' => (new BookmarkCollection($bookmarks))->toArray(request()),
+        ])->paginator($paginated ? $bookmarks : null);
     }
 
     public function store(int $userId, array $input, ?CarbonInterface $createdAt = null)
@@ -195,14 +187,12 @@ class BookmarkService extends Service
         }
 
         $validator = Validator::make($input, [
-            'collection' => ['sometimes', 'string', 'max:512'],
+            'collection' => ['sometimes', 'nullable', 'string', 'max:512'],
             'is_favorited' => ['sometimes', 'nullable', 'boolean'],
             'is_read' => ['sometimes', 'nullable', 'boolean'],
             'is_archived' => ['sometimes', 'nullable', 'boolean'],
             'is_shared' => ['sometimes', 'nullable', 'boolean'],
             'note' => ['sometimes', 'string'],
-            'tags' => ['sometimes', 'array'],
-            'tags.*' => ['sometimes', 'alpha_dash', 'max:64'],
         ]);
         if ($validator->fails()) {
             return ApiResponse::makeFromValidator($validator);
@@ -223,10 +213,6 @@ class BookmarkService extends Service
                 $updateData['favorited_at'] = $this->booleanToDate($validatedAttributeValue);
             } elseif ($validatedAttributeName === 'note') {
                 $updateData['note'] = $validatedAttributeValue;
-            } elseif ($validatedAttributeName === 'tags') {
-                $tagStoreRes = TagService::new()->storeTags($userId, $validatedAttributeName);
-                $tagIds = collect($tagStoreRes->getData('tags'))->pluck('id')->toArray();
-                $bookmark->tags()->sync($tagIds);
             }
         }
 
@@ -237,24 +223,6 @@ class BookmarkService extends Service
         return ApiResponse::make(200)->data([
             'bookamrk' => new BookmarkResource($bookmark),
         ]);
-    }
-
-    public function syncTags(int $id, int $userId, array $input)
-    {
-        $bookmark = $this->getBookmark($id, $userId);
-        if (! $bookmark) {
-            return ApiResponse::make(404);
-        }
-
-        $tagStoreRes = TagService::new()->store($userId, $input);
-        if (! $tagStoreRes->isSuccessful()) {
-            return $tagStoreRes;
-        }
-
-        $tagIds = collect($tagStoreRes->getData('tags'))->pluck('id')->toArray();
-        $bookmark->tags()->sync($tagIds);
-
-        return ApiResponse::make(200);
     }
 
     public function collections(int $userId)
