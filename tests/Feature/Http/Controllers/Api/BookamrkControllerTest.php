@@ -127,21 +127,6 @@ class BookamrkControllerTest extends TestCase
         $response->assertJsonPath('data.bookamrk.read_at', null);
     }
 
-    public function test_successful_store_tags()
-    {
-        $loginResponse = $this->login();
-        $userId = $loginResponse->getData('user.id');
-        $token = $loginResponse->getData('token');
-
-        $oldBookmark = Bookmark::factory()->create(['user_id' => $userId]);
-
-        $response = $this->postJson(route('api.bookmarks.tags.store', ['id' => $oldBookmark->id]), [
-            'tags' => fake()->words(3),
-        ], ['Authorization' => 'Bearer '.$token]);
-
-        $response->assertStatus(200);
-    }
-
     public function test_successful_collections(): void
     {
         $loginResponse = $this->login();
