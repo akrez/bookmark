@@ -1,16 +1,15 @@
 <?php
 
-namespace App\Http\Resources\User;
+namespace App\Http\Resources\Bookmark;
 
 use App\Http\Resources\JsonResource;
 use Illuminate\Http\Request;
 
-class ProfileResource extends JsonResource
+class BookmarkCollectionResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
     public function toArray(?Request $request = null)
@@ -18,9 +17,8 @@ class ProfileResource extends JsonResource
         $resource = $this->resource;
 
         return [
-            'id' => $resource->id,
             'name' => $resource->name,
-            'email' => $resource->email,
+            'collection_count' => $resource->collection_count,
         ];
     }
 }

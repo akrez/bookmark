@@ -3,7 +3,6 @@
 namespace App\Http\Resources\Bookmark;
 
 use App\Http\Resources\JsonResource;
-use App\Http\Resources\Tag\TagNameResource;
 use Illuminate\Http\Request;
 
 class BookmarkResource extends JsonResource
@@ -29,7 +28,6 @@ class BookmarkResource extends JsonResource
             'favorited_at' => $resource?->favorited_at?->toIso8601String(),
             'updated_at' => $resource?->updated_at?->toIso8601String(),
             'created_at' => $resource?->created_at?->toIso8601String(),
-            'tags' => $this->whenLoaded('tags', fn ($tags) => TagNameResource::collection($tags)),
         ];
     }
 }

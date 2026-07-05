@@ -1,16 +1,15 @@
 <?php
 
-namespace App\Http\Resources\User;
+namespace App\Http\Resources\Url;
 
 use App\Http\Resources\JsonResource;
 use Illuminate\Http\Request;
 
-class ProfileResource extends JsonResource
+class UrlResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
     public function toArray(?Request $request = null)
@@ -19,8 +18,12 @@ class ProfileResource extends JsonResource
 
         return [
             'id' => $resource->id,
-            'name' => $resource->name,
-            'email' => $resource->email,
+            'url' => $resource->url,
+            'base_url' => $resource->base_url,
+            'title' => $resource->title,
+            'description' => $resource->description,
+            'favicon' => $resource->favicon,
+            'fetched_at' => $resource?->fetched_at?->toIso8601String(),
         ];
     }
 }
