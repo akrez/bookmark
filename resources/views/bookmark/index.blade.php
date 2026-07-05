@@ -9,6 +9,7 @@
             'api.bookmarks.index' => route('api.bookmarks.index'),
             'api.auth.logout' => route('api.auth.logout'),
             'api.netscape.import' => route('api.netscape.import'),
+            'api.netscape.export' => route('api.netscape.export'),
             'api.bookmarks.updateAttribute' => route('api.bookmarks.index'),
             'api.bookmarks.store' => route('api.bookmarks.index'),
         ],
@@ -18,10 +19,10 @@
 @section('content')
     <div class="container-fluid" x-data="data()" x-init="initData({{ json_encode($params) }})">
         <div class="row py-4">
-            <div class="col-8 col-lg-7 offset-lg-1 d-flex justify-content-between align-items-center">
+            <div class="col-7 col-lg-7 offset-lg-1 d-flex justify-content-between align-items-center">
                 <input type="text" class="form-control rounded-pill py-2 px-4" x-model="filters.q">
             </div>
-            <div class="col-3 col-lg-1 offset-1 offset-lg-2 d-flex justify-content-end align-items-center gap-3">
+            <div class="col-4 col-lg-1 offset-1 offset-lg-2 d-flex justify-content-end align-items-center gap-3">
                 <button
                     class="btn rounded bg-white text-secondary border border border-secondary-subtle rounded-4 d-flex flex-row p-2 px-3"
                     @click="isImportModalOpen ? closeImportModal() : (isImportModalOpen  = true)">
@@ -47,7 +48,7 @@
                     </div>
                     <template x-for="collection in collections" x-show="!loading.callBookmarksCollections">
                         <div class="fs-7 d-inline-block px-0 py-2 me-3 cursor-pointer user-select-none border-3 border-bottom"
-                            :class="(filters.collection === collection.name ? 'border-dark fw-bold' : 'border-white')"
+                            :class="(filters.collection === collection.name ? 'border-dark' : 'border-white')"
                             x-text="collection.name" @click="doFilter(() => filters.collection = collection.name)">
                         </div>
                     </template>
@@ -182,8 +183,8 @@
             <div class="col-lg-7 offset-lg-1">
                 <div class="d-flex flex-column py-4 gap-4">
                     <template x-if="loading.callBookmarksIndex">
-                        <div class="fs-7 rounded-pill pe-3 bg-white text-dark border border-light fw-bold">
-                            <div class="spinner-border spinner-border-sm"></div>
+                        <div class="fs-7 rounded-pill pe-3 bg-white text-dark fw-bold">
+                            <div class="spinner-border"></div>
                         </div>
                     </template>
                     <template x-if="!loading.callBookmarksIndex && (bookmarks.length < 1)">
@@ -204,7 +205,7 @@
                                             x-text="bookmark.url.description" x-show="bookmark.url.description"></div>
                                         <a class="fs-8 text-decoration-none text-truncate d-block text-dark"
                                             x-text="bookmark.url.url" target="_blank" :href="bookmark.url.url"></a>
-                                        <a class="fs-5 text-primary text-decoration-none lh-sm"
+                                        <a class="fs-5 text-primary text-decoration-none lh-sm text-truncate"
                                             x-text="bookmark.url.title" target="_blank" :href="bookmark.url.url"></a>
                                         <div class="fs-7">
                                             <span class="pe-1" x-text="bookmark.note" x-show="bookmark.note"></span>
@@ -264,9 +265,10 @@
                                                         Submit
                                                     </button>
                                                 </div>
-                                                <div>
+                                                <div class="d-flex gap-2"
+                                                    :class="(collections.length > 0 ? 'd-flex' : 'd-none')">
                                                     <template x-for="collection in collections">
-                                                        <span class="text-decoration-underline cursor-pointer me-1"
+                                                        <span class="text-decoration-underline cursor-pointer fs-7"
                                                             x-text="collection.name"
                                                             @click="callUpdateBookmark(bookmark.id, 'collection', collection.name)"></span>
                                                     </template>
@@ -280,24 +282,24 @@
                     </template>
                     <template
                         x-if="!loading.callBookmarksIndex && paginator && !(paginator.currentPage == 1 && paginator.onLastPage)">
-                        <div class="d-flex justify-content-center gap-3">
-                            <a x-show="paginator?.currentPage > 2" @click="doFilter(() => filters.page = 1, false)"
-                                class="cursor-pointer me-3 text-decoration-none text-primary">
+                        <div class="d-flex justify-content-center gap-1">
+                            <a x-show="paginator?.currentPage > 2" @click="doFilter(() => filters.page = 1, false, false)"
+                                class="cursor-pointer px-2 text-decoration-none text-primary">
                                 <i class="bi bi-chevron-double-left"></i>
                             </a>
                             <a x-show="paginator?.currentPage > 1"
-                                @click="doFilter(() => filters.page = paginator?.currentPage - 1, false)"
-                                class="cursor-pointer me-3 text-decoration-none text-primary">
+                                @click="doFilter(() => filters.page = paginator?.currentPage - 1, false, false)"
+                                class="cursor-pointer px-2 text-decoration-none text-primary">
                                 <i class="bi bi-chevron-left"></i>
                             </a>
                             <template x-for="n in pageRange()">
-                                <span @click="doFilter(() => filters.page = n, false)" class="text-decoration-none"
+                                <span @click="doFilter(() => filters.page = n, false, false)" class="text-decoration-none px-2"
                                     x-text="n"
                                     :class="{ 'cursor-pointer text-primary': paginator?.currentPage != n }"></span>
                             </template>
                             <a x-show="!paginator?.onLastPage"
-                                @click="doFilter(() =>filters.page = paginator?.currentPage + 1, false)"
-                                class="cursor-pointer ms-3 text-decoration-none text-primary">
+                                @click="doFilter(() =>filters.page = paginator?.currentPage + 1, false, false)"
+                                class="cursor-pointer px-2 text-decoration-none text-primary">
                                 <i class="bi bi-chevron-right"></i>
                             </a>
                         </div>
@@ -338,11 +340,10 @@
                 <div class="modal-content bg-modal rounded rounded-5" @click.stop>
                     <div class="modal-body p-0">
                         <div class="d-flex justify-content-between align-items-center p-3 fs-7">
-                            <span></span>
+                            <span class="text-center flex-grow-1">Create new bookmark</span>
                             <i class="bi bi-x-lg cursor-pointer" @click="closeImportModal()"></i>
                         </div>
                         <div class="d-flex flex-column justify-content-center p-3 py-0 gap-3">
-                            <span class="text-center flex-grow-1">Create new bookmark</span>
                             <input class="form-control" x-model="createForm.url">
                             <button type="button"
                                 class="btn btn-light w-100 rounded-5 d-flex justify-content-center align-items-center gap-2 rounded"
@@ -367,6 +368,18 @@
                                 Import
                             </button>
                         </div>
+                        <hr class="border-secondary">
+                        <div class="d-flex flex-column justify-content-center p-3 pt-0 gap-3">
+                            <span class="text-center flex-grow-1">Export netscape html file</span>
+                            <button type="button"
+                                class="btn btn-light w-100 rounded-5 d-flex justify-content-center align-items-center gap-2 rounded"
+                                @click="callNetscapeExport()" :disabled="loading.callNetscapeExport">
+                                <i
+                                    :class="loading.callNetscapeExport ? 'spinner-border spinner-border-sm' :
+                                        'bi bi-file-earmark-arrow-up'"></i>
+                                Export
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -385,6 +398,7 @@
                     callBookmarksIndex: false,
                     callAuthLogout: false,
                     callNetscapeImport: false,
+                    callNetscapeExport: false,
                     callUpdateBookmark: null,
                     callStoreBookmark: false,
                 },
@@ -406,25 +420,32 @@
                     url: null,
                 },
                 init() {
-                    this.$watch('filters', () => {
-                        this.callBookmarksIndex();
+                    this.$watch('filters.q', () => {
+                        this.doFilter(() => {});
                     }, {
                         deep: true
                     });
                 },
                 async initData(initParams) {
                     this.urls = initParams.urls;
-                    this.resetAll();
+                    this.resetAll(true);
                 },
-                resetAll() {
-                    this.callBookmarksCollections();
-                    this.callBookmarksIndex();
-                },
-                doFilter(func, resetPage = true) {
-                    func();
+                resetAll(resetCollection = false, resetPage = true) {
+                    if(resetCollection) {
+                        this.collections = [];
+                        this.callBookmarksCollections();
+                    }
                     if (resetPage) {
                         this.filters.page = 1;
                     }
+                    this.collectionModalId = null,
+                    this.closeImportModal();
+                    this.bookmarks = [];
+                    this.callBookmarksIndex();
+                },
+                doFilter(func, resetCollection = false, resetPage = true) {
+                    func();
+                    this.resetAll(resetCollection, resetPage);
                 },
                 pageRange(sideCount = 5) {
                     const {
@@ -609,9 +630,7 @@
 
                         if (res.ok) {
                             this.$store.alert.success('Bookmarks imported successfully!');
-                            this.closeImportModal();
-                            this.callBookmarksCollections();
-                            this.callBookmarksIndex();
+                            this.resetAll(true);
                         } else {
                             this.$store.alert.error(resJson.message, resJson.errors);
                         }
@@ -623,6 +642,37 @@
                         this.loading.callNetscapeImport = false;
                     }
                 },
+                async callNetscapeExport() {
+                    try {
+                        if (this.loading.callNetscapeExport) return;
+                        this.loading.callNetscapeExport = true;
+
+                        const filters = JSON.parse(JSON.stringify(this.filters));
+                        if (this.filters.collection === null) {
+                            delete filters.collection;
+                        }
+                        const res = await this.$store.call.callJson(
+                            'GET', this.urls['api.netscape.export'], filters, null, true
+                        );
+                        const resJson = await res.json();
+
+                        if (res.ok) {
+                            this.$store.alert.success('Bookmarks exported successfully!');
+                            const blob = new Blob([resJson.data.file], {
+                                type: 'text/html;charset=utf-8'
+                            });
+                            saveAs(blob, resJson.data.file_name);
+                        } else {
+                            this.$store.alert.error(resJson.message, resJson.errors);
+                        }
+
+                    } catch (err) {
+                        console.log(err);
+                        this.$store.alert.error('Error exporting bookmarks: ' + err.message);
+                    } finally {
+                        this.loading.callNetscapeExport = false;
+                    }
+                },
                 async callUpdateBookmark(bookmarkId, fieldName, fieldValue) {
                     try {
                         if (this.loading.callUpdateBookmark) return;
@@ -630,7 +680,6 @@
 
                         const data = {};
                         data[fieldName] = fieldValue;
-                        console.log(fieldValue);
 
                         const res = await this.$store.call.callJson(
                             'PATCH', this.urls['api.bookmarks.updateAttribute'] + '/' + bookmarkId, null, data, true
@@ -639,9 +688,7 @@
 
                         if (res.ok) {
                             this.$store.alert.success('Bookmarks updated successfully!');
-                            this.closeImportModal();
-                            this.callBookmarksCollections();
-                            this.callBookmarksIndex();
+                            this.resetAll(true);
                         } else {
                             this.$store.alert.error(resJson.message, resJson.errors);
                         }
@@ -665,9 +712,7 @@
 
                         if (res.ok) {
                             this.$store.alert.success('Bookmarks created successfully!');
-                            this.closeImportModal();
-                            this.callBookmarksCollections();
-                            this.callBookmarksIndex();
+                            this.resetAll();
                         } else {
                             this.$store.alert.error(resJson.message, resJson.errors);
                         }
