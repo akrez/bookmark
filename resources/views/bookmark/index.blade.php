@@ -293,8 +293,8 @@
                                 <i class="bi bi-chevron-left"></i>
                             </a>
                             <template x-for="n in pageRange()">
-                                <span @click="doFilter(() => filters.page = n, false, false)" class="text-decoration-none px-2"
-                                    x-text="n"
+                                <span @click="doFilter(() => filters.page = n, false, false)"
+                                    class="text-decoration-none px-2" x-text="n"
                                     :class="{ 'cursor-pointer text-primary': paginator?.currentPage != n }"></span>
                             </template>
                             <a x-show="!paginator?.onLastPage"
@@ -413,6 +413,7 @@
                     favorite: "ALL",
                     page: 1
                 },
+                scrollY: null,
                 dropdown: null,
                 paginator: null,
                 collectionForms: {},
@@ -428,10 +429,13 @@
                 },
                 async initData(initParams) {
                     this.urls = initParams.urls;
-                    this.resetAll(true);
+                    this.doFilter(() => {}, true);
                 },
-                resetAll(resetCollection = false, resetPage = true) {
-                    if(resetCollection) {
+                async doFilter(func, resetCollection = false, resetPage = true) {
+                    func();
+                    //
+                    this.scrollY = window.scrollY;
+                    if (resetCollection) {
                         this.collections = [];
                         this.callBookmarksCollections();
                     }
@@ -441,11 +445,10 @@
                     this.collectionModalId = null,
                     this.closeImportModal();
                     this.bookmarks = [];
-                    this.callBookmarksIndex();
-                },
-                doFilter(func, resetCollection = false, resetPage = true) {
-                    func();
-                    this.resetAll(resetCollection, resetPage);
+                    await this.callBookmarksIndex();
+                    if (! resetPage) {
+                        window.scrollTo(0, this.scrollY);
+                    }
                 },
                 pageRange(sideCount = 5) {
                     const {
@@ -630,7 +633,7 @@
 
                         if (res.ok) {
                             this.$store.alert.success('Bookmarks imported successfully!');
-                            this.resetAll(true);
+                            this.doFilter(() => {}, true);
                         } else {
                             this.$store.alert.error(resJson.message, resJson.errors);
                         }
@@ -688,7 +691,7 @@
 
                         if (res.ok) {
                             this.$store.alert.success('Bookmarks updated successfully!');
-                            this.resetAll(true);
+                            this.doFilter(() => {}, true, false);
                         } else {
                             this.$store.alert.error(resJson.message, resJson.errors);
                         }
@@ -712,7 +715,7 @@
 
                         if (res.ok) {
                             this.$store.alert.success('Bookmarks created successfully!');
-                            this.resetAll();
+                            this.doFilter(() => {});
                         } else {
                             this.$store.alert.error(resJson.message, resJson.errors);
                         }
