@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookamrkController;
 use App\Http\Controllers\Api\NetscapeController;
+use App\Http\Controllers\Api\UrlController;
 use Illuminate\Support\Facades\Route;
 
 Route::name('api.')->group(function () {
@@ -30,5 +31,8 @@ Route::name('api.')->group(function () {
             Route::post('/import', [NetscapeController::class, 'import'])->name('import');
             Route::get('/export', [NetscapeController::class, 'export'])->name('export');
         });
+    });
+    Route::prefix('url')->name('url.')->group(function () {
+        Route::get('/fetch', [UrlController::class, 'fetch'])->name('fetch');
     });
 });

@@ -12,3 +12,5 @@ Route::prefix('auth')->name('auth.')->group(function () {
 Route::prefix('bookmarks')->name('bookmarks.')->group(function () {
     Route::get('/', [BookamrkController::class, 'index'])->name('index');
 });
+
+Route::get('/', [BookamrkController::class, 'index'])->name('index');

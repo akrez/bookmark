@@ -91,7 +91,7 @@ class NetscapeService extends Service
         }
 
         return ApiResponse::make()->data([
-            'file_name' => 'bookmarks_'. date('Y_m_d_H_i_s'),
+            'file_name' => 'bookmarks_'.date('Y_m_d_H_i_s'),
             'file' => implode("\n", [
                 '<!DOCTYPE NETSCAPE-Bookmark-file-1>',
                 '<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">',
