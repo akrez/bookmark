@@ -24,6 +24,10 @@ class Url extends Model
         'fetched_at',
     ];
 
+    protected $casts = [
+        'fetched_at' => 'datetime',
+    ];
+
     protected static function booted(): void
     {
         Url::observe(UrlObserver::class);

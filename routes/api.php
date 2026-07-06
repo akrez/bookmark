@@ -32,7 +32,7 @@ Route::name('api.')->group(function () {
             Route::get('/export', [NetscapeController::class, 'export'])->name('export');
         });
     });
-    Route::prefix('url')->name('url.')->group(function () {
+    Route::prefix('urls')->name('url.')->group(function () {
         Route::get('/fetch', [UrlController::class, 'fetch'])->name('fetch');
     });
 });
