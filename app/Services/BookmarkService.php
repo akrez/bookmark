@@ -193,6 +193,7 @@ class BookmarkService extends Service
         $bookmarkIds = $bookmarks->keys();
 
         $validator = Validator::make($input, [
+            'bookmarks' => ['required', 'array'],
             'bookmarks.*.id' => ['required', 'integer', Rule::in($bookmarkIds)],
             'bookmarks.*.collection' => ['sometimes', 'nullable', 'string', 'max:512'],
             'bookmarks.*.is_favorited' => ['sometimes', 'nullable', 'boolean'],
@@ -206,7 +207,7 @@ class BookmarkService extends Service
         }
         $validatedDatas = $validator->validated();
 
-        foreach ($validatedDatas as $validated) {
+        foreach ($validatedDatas['bookmarks'] as $validated) {
             $updateData = [];
             foreach ($validated as $validatedAttributeName => $validatedAttributeValue) {
                 if ($validatedAttributeName === 'collection') {

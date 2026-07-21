@@ -443,10 +443,10 @@
                         this.filters.page = 1;
                     }
                     this.collectionModalId = null,
-                    this.closeCreateModal();
+                        this.closeCreateModal();
                     this.bookmarks = [];
                     await this.callBookmarksIndex();
-                    if (! resetPage) {
+                    if (!resetPage) {
                         window.scrollTo(0, this.scrollY);
                     }
                 },
@@ -681,11 +681,15 @@
                         if (this.loading.callUpdateBookmark) return;
                         this.loading.callUpdateBookmark = bookmarkId + '-' + fieldName;
 
-                        const data = {id: bookmarkId};
-                        data[fieldName] = fieldValue;
+                        const dataItem = {
+                            id: bookmarkId
+                        };
+                        dataItem[fieldName] = fieldValue;
 
                         const res = await this.$store.call.callJson(
-                            'PATCH', this.urls['api.bookmarks.updateAttributes'], null, data, true
+                            'PATCH', this.urls['api.bookmarks.updateAttributes'], null, {
+                                bookmarks: [dataItem]
+                            }, true
                         );
                         const resJson = await res.json();
 
