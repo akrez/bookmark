@@ -25,7 +25,7 @@ Route::name('api.')->group(function () {
             Route::get('/{id}', [BookamrkController::class, 'show'])->name('show');
             Route::put('/{id}', [BookamrkController::class, 'update'])->name('update');
             Route::delete('/{id}', [BookamrkController::class, 'destroy'])->name('destroy');
-            Route::patch('/{id}', [BookamrkController::class, 'updateAttribute'])->name('updateAttribute');
+            Route::patch('/', [BookamrkController::class, 'updateAttributes'])->name('updateAttributes');
         });
         Route::prefix('netscape')->name('netscape.')->group(function () {
             Route::post('/import', [NetscapeController::class, 'import'])->name('import');

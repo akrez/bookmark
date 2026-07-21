@@ -50,8 +50,8 @@ class BookamrkController extends Controller
         return BookmarkService::new()->collections($request->user()->id);
     }
 
-    public function updateAttribute(Request $request, int $id)
+    public function updateAttributes(Request $request)
     {
-        return BookmarkService::new()->updateAttribute($id, $request->user()->id, $request->post());
+        return BookmarkService::new()->updateAttributes($request->user()->id, $request->post());
     }
 }

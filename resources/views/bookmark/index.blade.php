@@ -10,7 +10,7 @@
             'api.auth.logout' => route('api.auth.logout'),
             'api.netscape.import' => route('api.netscape.import'),
             'api.netscape.export' => route('api.netscape.export'),
-            'api.bookmarks.updateAttribute' => route('api.bookmarks.index'),
+            'api.bookmarks.updateAttributes' => route('api.bookmarks.index'),
             'api.bookmarks.store' => route('api.bookmarks.index'),
         ],
     ];
@@ -681,11 +681,11 @@
                         if (this.loading.callUpdateBookmark) return;
                         this.loading.callUpdateBookmark = bookmarkId + '-' + fieldName;
 
-                        const data = {};
+                        const data = {id: bookmarkId};
                         data[fieldName] = fieldValue;
 
                         const res = await this.$store.call.callJson(
-                            'PATCH', this.urls['api.bookmarks.updateAttribute'] + '/' + bookmarkId, null, data, true
+                            'PATCH', this.urls['api.bookmarks.updateAttributes'], null, data, true
                         );
                         const resJson = await res.json();
 

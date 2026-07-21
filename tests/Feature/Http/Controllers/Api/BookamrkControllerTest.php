@@ -19,9 +19,9 @@ class BookamrkControllerTest extends TestCase
         $user = User::factory()->make();
         $password = '12345678';
         $registeredUser = $authService->register([
-            'name' => $user->name, 
-            'email' => $user->email, 
-            'password' => $password, 
+            'name' => $user->name,
+            'email' => $user->email,
+            'password' => $password,
             'password_confirmation' => $password,
         ]);
 
@@ -119,8 +119,11 @@ class BookamrkControllerTest extends TestCase
             'read_at' => now(),
         ]);
 
-        $response = $this->patchJson(route('api.bookmarks.updateAttribute', ['id' => $oldBookmark->id]), [
-            'is_read' => false,
+        $response = $this->patchJson(route('api.bookmarks.updateAttributes'), [
+            [
+                'id' => $oldBookmark->id,
+                'is_read' => false,
+            ],
         ], ['Authorization' => 'Bearer '.$token]);
 
         $response->assertStatus(200);
