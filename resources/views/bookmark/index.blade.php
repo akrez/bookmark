@@ -18,271 +18,324 @@
 
 @section('content')
     <div class="container-fluid" x-data="data()" x-init="initData({{ json_encode($params) }})">
-        <div class="row py-4">
-            <div class="col-7 col-lg-7 offset-lg-1 d-flex justify-content-between align-items-center">
-                <input type="text" class="form-control rounded-pill py-2 px-4" x-model="filters.q">
-            </div>
-            <div class="col-4 col-lg-1 offset-1 offset-lg-2 d-flex justify-content-end align-items-center gap-3">
-                <button
-                    class="btn rounded bg-white text-secondary border border border-secondary-subtle rounded-4 d-flex flex-row p-2 px-3"
-                    @click="isCreateModalOpen ? closeCreateModal() : (isCreateModalOpen  = true)">
-                    <i class="bi bi-pencil"></i>
-                    <span class="ms-3">Create</span>
-                </button>
-                <button class="btn btn-primary rounded-circle" @click="isProfileModalOpen = !isProfileModalOpen"
-                    x-text="$store.auth.user().name.charAt(0).toUpperCase()">
-                </button>
-            </div>
-        </div>
-        <div class="row border-bottom">
-            <div class="col-lg-10 offset-lg-1 d-flex flex-row flex-wrap justify-content-between">
-                <div class="d-flex flex-grow-1 flex-wrap">
-                    <div class="fs-7 d-inline-block px-0 py-2 me-3 fw-bold fw-semibold cursor-pointer user-select-none border-3 border-bottom"
-                        @click="doFilter(() => filters.collection = null)"
-                        :class="(filters.collection === null ? 'border-dark fw-bold' : 'border-white')">
-                        All
+        <div class="row">
+            <!-- Sidebar Filters -->
+            <div class="col-lg-3 col-xl-2 border-end bg-light min-vh-100 p-3">
+                <!-- Search -->
+                <div class="mb-3">
+                    <input type="text" class="ps-3 form-control form-control-sm rounded-pill"
+                        placeholder="Search bookmarks..." x-model="filters.q">
+                </div>
+
+                <!-- Status Filters -->
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filterRead" id="readAll" value="ALL"
+                            x-model="filters.read">
+                        <label class="form-check-label fs-7" for="readAll">All</label>
                     </div>
-                    <div class="fs-7 d-inline-block px-0 py-2 me-3 cursor-pointer user-select-none border-3 border-bottom"
-                        :class="(loading.callBookmarksCollections ? 'd-inline-block border-white' : 'd-none')">
-                        <div class="spinner-border spinner-border-sm"></div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filterRead" id="readRead" value="READ"
+                            x-model="filters.read">
+                        <label class="form-check-label fs-7" for="readRead">Read</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filterRead" id="readUnread" value="UNREAD"
+                            x-model="filters.read">
+                        <label class="form-check-label fs-7" for="readUnread">Unread</label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filterShare" id="shareAll" value="ALL"
+                            x-model="filters.share">
+                        <label class="form-check-label fs-7" for="shareAll">All</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filterShare" id="shareShared" value="SHARED"
+                            x-model="filters.share">
+                        <label class="form-check-label fs-7" for="shareShared">Shared</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filterShare" id="shareUnshared"
+                            value="UNSHARED" x-model="filters.share">
+                        <label class="form-check-label fs-7" for="shareUnshared">Unshared</label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filterFavorite" id="favAll" value="ALL"
+                            x-model="filters.favorite">
+                        <label class="form-check-label fs-7" for="favAll">All</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filterFavorite" id="favFavorited"
+                            value="FAVORITED" x-model="filters.favorite">
+                        <label class="form-check-label fs-7" for="favFavorited">Favorited</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filterFavorite" id="favUnfavorited"
+                            value="UNFAVORITED" x-model="filters.favorite">
+                        <label class="form-check-label fs-7" for="favUnfavorited">Unfavorited</label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filterArchive" id="archiveAll" value="ALL"
+                            x-model="filters.archive">
+                        <label class="form-check-label fs-7" for="archiveAll">All</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filterArchive" id="archiveArchived"
+                            value="ARCHIVED" x-model="filters.archive">
+                        <label class="form-check-label fs-7" for="archiveArchived">Archived</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filterArchive" id="archiveUnarchived"
+                            value="UNARCHIVED" x-model="filters.archive">
+                        <label class="form-check-label fs-7" for="archiveUnarchived">Unarchived</label>
+                    </div>
+                </div>
+
+                <!-- Collections -->
+                <div class="mb-3">
+                    <div x-show="loading.callBookmarksCollections" class="spinner-border spinner-border-sm"></div>
+                    <div class="form-check" x-show="!loading.callBookmarksCollections">
+                        <input class="form-check-input" type="checkbox" id="collection-none" value=""
+                            x-model="filters.collections">
+                        <label class="form-check-label fs-7" for="collection-none"></label>
                     </div>
                     <template x-for="collection in collections" x-show="!loading.callBookmarksCollections">
-                        <div class="fs-7 d-inline-block px-0 py-2 me-3 cursor-pointer user-select-none border-3 border-bottom"
-                            :class="(filters.collection === collection.name ? 'border-dark' : 'border-white')"
-                            x-text="collection.name" @click="doFilter(() => filters.collection = collection.name)">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" :id="'collection-' + collection.name"
+                                :value="collection.name" x-model="filters.collections">
+                            <label class="form-check-label fs-7" :for="'collection-' + collection.name"
+                                x-text="collection.name"></label>
                         </div>
                     </template>
-                    <div class="fs-7 d-inline-block px-0 py-2 me-3 fw-semibold cursor-pointer user-select-none border-3 border-bottom"
-                        :class="(filters.collection === '' ? 'border-dark fw-bold' : 'border-white')"
-                        @click="doFilter(() => filters.collection = '')">
-                        None
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-primary rounded-pill w-100" @click="applyCollectionFilter()">
+                            <i class="bi bi-search"></i> Search
+                        </button>
                     </div>
-                </div>
-                <div class="dropdown" @click.outside="dropdown = null">
-
-                    <div class="fs-7 d-inline-block px-0 py-2 me-0 fw-bold fw-semibold cursor-pointer user-select-none border-3 border-bottom dropdown-toggle"
-                        :class="(filters.read != 'ALL' ? 'border-dark fw-bold' : 'border-white')"
-                        @click="setDropdown('read')">
-                        Read
-                    </div>
-                    <ul class="dropdown-menu w-100" :class="getDropdownClass('read')">
-                        <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.read = 'ALL')">
-                            <div>All</div>
-                            <template x-if="filters.read == 'ALL'">
-                                <i class="bi bi-check2"></i>
-                            </template>
-                        </li>
-                        <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.read = 'READ')">
-                            <div>Read</div>
-                            <template x-if="filters.read == 'READ'">
-                                <i class="bi bi-check2"></i>
-                            </template>
-                        </li>
-                        <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.read = 'UNREAD')">
-                            <div>UnRead</div>
-                            <template x-if="filters.read == 'UNREAD'">
-                                <i class="bi bi-check2"></i>
-                            </template>
-                        </li>
-                    </ul>
-
-                    <div class="fs-7 d-inline-block px-0 py-2 ms-3 fw-bold fw-semibold cursor-pointer user-select-none border-3 border-bottom dropdown-toggle"
-                        :class="(filters.share != 'ALL' ? 'border-dark fw-bold' : 'border-white')"
-                        @click="setDropdown('share')">
-                        Share
-                    </div>
-                    <ul class="dropdown-menu w-100" :class="getDropdownClass('share')">
-                        <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.share = 'ALL')">
-                            <div>All</div>
-                            <template x-if="filters.share == 'ALL'">
-                                <i class="bi bi-check2"></i>
-                            </template>
-                        </li>
-                        <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.share = 'SHARED')">
-                            <div>Shared</div>
-                            <template x-if="filters.share == 'SHARED'">
-                                <i class="bi bi-check2"></i>
-                            </template>
-                        </li>
-                        <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.share = 'UNSHARED')">
-                            <div>UnShared</div>
-                            <template x-if="filters.share == 'UNSHARED'">
-                                <i class="bi bi-check2"></i>
-                            </template>
-                        </li>
-                    </ul>
-
-                    <div class="fs-7 d-inline-block px-0 py-2 ms-3 fw-bold fw-semibold cursor-pointer user-select-none border-3 border-bottom dropdown-toggle"
-                        :class="(filters.favorite != 'ALL' ? 'border-dark fw-bold' : 'border-white')"
-                        @click="setDropdown('favorite')">
-                        Favorite
-                    </div>
-                    <ul class="dropdown-menu w-100" :class="getDropdownClass('favorite')">
-                        <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.favorite = 'ALL')">
-                            <div>All</div>
-                            <template x-if="filters.favorite == 'ALL'">
-                                <i class="bi bi-check2"></i>
-                            </template>
-                        </li>
-                        <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.favorite = 'FAVORITED')">
-                            <div>Favorited</div>
-                            <template x-if="filters.favorite == 'FAVORITED'">
-                                <i class="bi bi-check2"></i>
-                            </template>
-                        </li>
-                        <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.favorite = 'UNFAVORITED')">
-                            <div>UnFavorited</div>
-                            <template x-if="filters.favorite == 'UNFAVORITED'">
-                                <i class="bi bi-check2"></i>
-                            </template>
-                        </li>
-                    </ul>
-
-                    <div class="fs-7 d-inline-block px-0 py-2 ms-3 fw-bold fw-semibold cursor-pointer user-select-none border-3 border-bottom dropdown-toggle"
-                        :class="(filters.archive != 'ALL' ? 'border-dark fw-bold' : 'border-white')"
-                        @click="setDropdown('archive')">
-                        Archive
-                    </div>
-                    <ul class="dropdown-menu w-100" :class="getDropdownClass('archive')">
-                        <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.archive = 'ALL')">
-                            <div>All</div>
-                            <template x-if="filters.archive == 'ALL'">
-                                <i class="bi bi-check2"></i>
-                            </template>
-                        </li>
-                        <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.archive = 'ARCHIVED')">
-                            <div>Archived</div>
-                            <template x-if="filters.archive == 'ARCHIVED'">
-                                <i class="bi bi-check2"></i>
-                            </template>
-                        </li>
-                        <li class="d-flex justify-content-between px-3 cursor-pointer"
-                            @click="doFilter(() => filters.archive = 'UNARCHIVED')">
-                            <div>UnArchived</div>
-                            <template x-if="filters.archive == 'UNARCHIVED'">
-                                <i class="bi bi-check2"></i>
-                            </template>
-                        </li>
-                    </ul>
-
                 </div>
             </div>
-        </div>
-        <div class="row py-1">
-            <div class="col-lg-7 offset-lg-1">
-                <div class="d-flex flex-column py-4 gap-4">
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-xl-10 p-3">
+                <!-- Top Bar with Create & Profile -->
+                <div class="d-flex justify-content-end align-items-center gap-3 mb-3">
+                    <button
+                        class="btn rounded bg-white text-secondary border border-secondary-subtle rounded-4 d-flex flex-row p-2 px-3"
+                        @click="isCreateModalOpen ? closeCreateModal() : (isCreateModalOpen = true)">
+                        <i class="bi bi-plus-lg"></i>
+                        <span class="ms-2">Create</span>
+                    </button>
+                    <button class="btn btn-primary rounded-circle" @click="isProfileModalOpen = !isProfileModalOpen"
+                        x-text="$store.auth.user().name.charAt(0).toUpperCase()">
+                    </button>
+                </div>
+
+                <!-- Bulk Actions -->
+                <div class="d-flex align-items-center gap-3 mb-3" x-show="selectedBookmarks.length > 0">
+                    <span class="fw-semibold fs-7" x-text="selectedBookmarks.length + ' selected'"></span>
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill" @click="selectedBookmarks = []">
+                        <i class="bi bi-x-lg"></i> Clear
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-primary rounded-pill dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown">
+                            <i class="bi bi-gear"></i> Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item cursor-pointer" @click="bulkUpdate('is_read', true)">
+                                    <i class="bi bi-bookmark-check"></i> Mark as Read
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item cursor-pointer" @click="bulkUpdate('is_read', false)">
+                                    <i class="bi bi-bookmark"></i> Mark as Unread
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item cursor-pointer" @click="bulkUpdate('is_shared', true)">
+                                    <i class="bi bi-share"></i> Share
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item cursor-pointer" @click="bulkUpdate('is_shared', false)">
+                                    <i class="bi bi-share-slash"></i> Unshare
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item cursor-pointer" @click="bulkUpdate('is_favorited', true)">
+                                    <i class="bi bi-heart-fill text-danger"></i> Favorite
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item cursor-pointer" @click="bulkUpdate('is_favorited', false)">
+                                    <i class="bi bi-heart"></i> Unfavorite
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item cursor-pointer" @click="bulkUpdate('is_archived', true)">
+                                    <i class="bi bi-archive"></i> Archive
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item cursor-pointer" @click="bulkUpdate('is_archived', false)">
+                                    <i class="bi bi-box-arrow-up"></i> Unarchive
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item cursor-pointer" @click="bulkUpdateCollection()">
+                                    <i class="bi bi-collection"></i> Change Collection
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Bookmark List -->
+                <div class="d-flex flex-column gap-4">
                     <template x-if="loading.callBookmarksIndex">
-                        <div class="fs-7 rounded-pill pe-3 bg-white text-dark fw-bold">
-                            <div class="spinner-border"></div>
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary"></div>
                         </div>
                     </template>
                     <template x-if="!loading.callBookmarksIndex && (bookmarks.length < 1)">
-                        <div class="fs-7">
+                        <div class="text-center py-4 text-secondary fs-6">
+                            <i class="bi bi-bookmarks fs-1 d-block mb-2"></i>
                             Your search did not match any documents.
                         </div>
                     </template>
                     <template x-if="!loading.callBookmarksIndex">
-                        <template x-for="bookmark in bookmarks">
-                            <div class="d-flex flex-column">
-                                <div class="d-flex">
-                                    <div class="d-flex flex-grow-0 me-2 justify-content-center align-items-start">
-                                        <img class="w-32 pt-1"
-                                            :src="bookmark.url.favicon ?? bookmark.url.base_url + '/favicon.ico'">
-                                    </div>
-                                    <div class="d-flex flex-column justify-content-center flex-grow-1 overflow-hidden">
-                                        <div class="fs-7 text-decoration-none text-truncate d-block"
-                                            x-text="bookmark.url.description" x-show="bookmark.url.description"></div>
-                                        <a class="fs-8 text-decoration-none text-truncate d-block text-dark"
-                                            x-text="bookmark.url.url" target="_blank" :href="bookmark.url.url"></a>
-                                        <a class="fs-5 text-primary text-decoration-none lh-sm text-truncate"
-                                            x-text="bookmark.url.title" target="_blank" :href="bookmark.url.url"></a>
-                                        <div class="fs-7">
-                                            <span class="pe-1" x-text="bookmark.note" x-show="bookmark.note"></span>
+                        <div class="list-group">
+                            <template x-for="bookmark in bookmarks">
+                                <div class="list-group-item border-0 border-bottom py-3 px-0">
+                                    <div class="d-flex align-items-start">
+                                        <!-- Checkbox -->
+                                        <div class="me-3 pt-1">
+                                            <input class="form-check-input" type="checkbox" :value="bookmark.id"
+                                                x-model="selectedBookmarks">
                                         </div>
-                                        <div class="d-flex gap-3 fs-7">
-                                            <span class="p-0 text-secondary cursor-pointer d-flex align-items-center"
-                                                :class="{ 'fw-bold': bookmark.read_at }"
-                                                @click="callUpdateBookmark(bookmark.id, 'is_read', bookmark.read_at ? false : true)">
-                                                <i
-                                                    :class="loading.callUpdateBookmark == bookmark.id + '-is_read' ?
-                                                        'spinner-border spinner-border-sm' : 'bi-bookmark-check'"></i>
-                                                <span class="ps-1" x-text="bookmark.read_at ? 'Read' : 'Unread'"></span>
-                                            </span>
-                                            <span class="p-0 text-secondary cursor-pointer d-flex align-items-center"
-                                                :class="{ 'fw-bold': bookmark.shared_at }"
-                                                @click="callUpdateBookmark(bookmark.id, 'is_shared', bookmark.shared_at ? false : true)">
-                                                <i
-                                                    :class="loading.callUpdateBookmark == bookmark.id + '-is_shared' ?
-                                                        'spinner-border spinner-border-sm' : 'bi bi-share'"></i>
-                                                <span class="ps-1"
-                                                    x-text="bookmark.shared_at ? 'Shared' : 'Share'"></span>
-                                            </span>
-                                            <span class="p-0 text-secondary cursor-pointer d-flex align-items-center"
-                                                :class="{ 'fw-bold': bookmark.favorited_at }"
-                                                @click="callUpdateBookmark(bookmark.id, 'is_favorited', bookmark.favorited_at ? false : true)">
-                                                <i
-                                                    :class="loading.callUpdateBookmark == bookmark.id + '-is_favorited' ?
-                                                        'spinner-border spinner-border-sm' : 'bi bi-heart'"></i>
-                                                <span class="ps-1"
-                                                    x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
-                                            </span>
-                                            <span class="p-0 text-secondary cursor-pointer d-flex align-items-center"
-                                                :class="{ 'fw-bold': bookmark.archived_at }"
-                                                @click="callUpdateBookmark(bookmark.id, 'is_archived', bookmark.archived_at ? false : true)">
-                                                <i
-                                                    :class="loading.callUpdateBookmark == bookmark.id + '-is_archived' ?
-                                                        'spinner-border spinner-border-sm' : 'bi bi-archive'"></i>
-                                                <span class="ps-1"
-                                                    x-text="bookmark.archived_at ? 'Archived' : 'Archive'"></span>
-                                            </span>
-                                            <span class="p-0 text-secondary cursor-pointer d-flex align-items-center"
-                                                @click="collectionModalId = ((collectionModalId && collectionModalId == bookmark.id) ? null : bookmark.id)">
-                                                <i
-                                                    :class="loading.callUpdateBookmark == bookmark.id + '-collection' ?
-                                                        'spinner-border spinner-border-sm' : 'bi bi-collection'"></i>
-                                                <span class="ps-1" x-text="bookmark.collection"></span>
-                                            </span>
-                                        </div>
-                                        <template x-if="collectionModalId == bookmark.id">
-                                            <div
-                                                class="d-flex flex-column justify-content-center p-2 gap-2 rounded bg-white text-secondary border border-secondary-subtle rounded-2">
-                                                <div class="input-group input-group-sm">
-                                                    <input type="text" class="form-control"
-                                                        x-model="collectionForms[bookmark.id]">
-                                                    <button class="btn text-secondary border border-secondary-subtle"
-                                                        @click="callUpdateBookmark(bookmark.id, 'collection',  collectionForms[bookmark.id])">
-                                                        Submit
-                                                    </button>
-                                                </div>
-                                                <div class="d-flex gap-2"
-                                                    :class="(collections.length > 0 ? 'd-flex' : 'd-none')">
-                                                    <template x-for="collection in collections">
-                                                        <span class="text-decoration-underline cursor-pointer fs-7"
-                                                            x-text="collection.name"
-                                                            @click="callUpdateBookmark(bookmark.id, 'collection', collection.name)"></span>
-                                                    </template>
+
+                                        <!-- Bookmark Info -->
+                                        <div class="flex-grow-1 overflow-hidden">
+                                            <div class="d-flex align-items-start gap-3">
+                                                <img class="w-favicon pt-1"
+                                                    :src="bookmark.url.favicon ?? bookmark.url.base_url + '/favicon.ico'">
+                                                <div class="flex-grow-1 overflow-hidden">
+                                                    <div class="fs-7 text-decoration-none text-truncate d-block"
+                                                        x-text="bookmark.url.description"
+                                                        x-show="bookmark.url.description">
+                                                    </div>
+                                                    <a class="fs-8 text-decoration-none text-truncate d-block text-secondary"
+                                                        x-text="bookmark.url.url" target="_blank"
+                                                        :href="bookmark.url.url"></a>
+                                                    <a class="fs-5 text-primary text-decoration-none lh-sm text-truncate d-block"
+                                                        x-text="bookmark.url.title" target="_blank"
+                                                        :href="bookmark.url.url"></a>
+                                                    <div class="fs-7 text-secondary" x-text="bookmark.note"
+                                                        x-show="bookmark.note"></div>
                                                 </div>
                                             </div>
-                                        </template>
+                                        </div>
                                     </div>
+
+                                    <!-- Actions -->
+                                    <div class="d-flex flex-wrap gap-3 mt-2 ms-4 ps-1">
+                                        <span class="text-secondary cursor-pointer d-flex align-items-center fs-7"
+                                            :class="{ 'fw-bold': bookmark.read_at }"
+                                            @click="callUpdateBookmark(bookmark.id, 'is_read', bookmark.read_at ? false : true)">
+                                            <i
+                                                :class="loading.callUpdateBookmark == bookmark.id + '-is_read' ?
+                                                    'spinner-border spinner-border-sm' : 'bi-bookmark-check'"></i>
+                                            <span class="ms-1" x-text="bookmark.read_at ? 'Read' : 'Unread'"></span>
+                                        </span>
+                                        <span class="text-secondary cursor-pointer d-flex align-items-center fs-7"
+                                            :class="{ 'fw-bold': bookmark.shared_at }"
+                                            @click="callUpdateBookmark(bookmark.id, 'is_shared', bookmark.shared_at ? false : true)">
+                                            <i
+                                                :class="loading.callUpdateBookmark == bookmark.id + '-is_shared' ?
+                                                    'spinner-border spinner-border-sm' : 'bi bi-share'"></i>
+                                            <span class="ms-1" x-text="bookmark.shared_at ? 'Shared' : 'Share'"></span>
+                                        </span>
+                                        <span class="text-secondary cursor-pointer d-flex align-items-center fs-7"
+                                            :class="{ 'fw-bold': bookmark.favorited_at }"
+                                            @click="callUpdateBookmark(bookmark.id, 'is_favorited', bookmark.favorited_at ? false : true)">
+                                            <i
+                                                :class="loading.callUpdateBookmark == bookmark.id + '-is_favorited' ?
+                                                    'spinner-border spinner-border-sm' : 'bi bi-heart'"></i>
+                                            <span class="ms-1"
+                                                x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
+                                        </span>
+                                        <span class="text-secondary cursor-pointer d-flex align-items-center fs-7"
+                                            :class="{ 'fw-bold': bookmark.archived_at }"
+                                            @click="callUpdateBookmark(bookmark.id, 'is_archived', bookmark.archived_at ? false : true)">
+                                            <i
+                                                :class="loading.callUpdateBookmark == bookmark.id + '-is_archived' ?
+                                                    'spinner-border spinner-border-sm' : 'bi bi-archive'"></i>
+                                            <span class="ms-1"
+                                                x-text="bookmark.archived_at ? 'Archived' : 'Archive'"></span>
+                                        </span>
+                                        <span class="text-secondary cursor-pointer d-flex align-items-center fs-7"
+                                            @click="collectionModalId = ((collectionModalId && collectionModalId == bookmark.id) ? null : bookmark.id)">
+                                            <i
+                                                :class="loading.callUpdateBookmark == bookmark.id + '-collection' ?
+                                                    'spinner-border spinner-border-sm' : 'bi bi-collection'"></i>
+                                            <span class="ms-1" x-text="bookmark.collection"></span>
+                                        </span>
+                                    </div>
+
+                                    <!-- Collection Modal -->
+                                    <template x-if="collectionModalId == bookmark.id">
+                                        <div class="mt-2 ms-4 ps-1 d-flex flex-column p-2 gap-2 rounded bg-light">
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" class="form-control"
+                                                    x-model="collectionForms[bookmark.id]">
+                                                <button class="btn btn-outline-secondary"
+                                                    @click="callUpdateBookmark(bookmark.id, 'collection', collectionForms[bookmark.id])">
+                                                    <i class="bi bi-check2"></i>
+                                                </button>
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <span class="badge bg-light text-dark border cursor-pointer"
+                                                    @click="callUpdateBookmark(bookmark.id, 'collection', '')">
+                                                </span>
+                                                <template x-for="collection in collections">
+                                                    <span class="badge bg-light text-dark border cursor-pointer"
+                                                        x-text="collection.name"
+                                                        @click="callUpdateBookmark(bookmark.id, 'collection', collection.name)"></span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
                                 </div>
-                            </div>
-                        </template>
+                            </template>
+                        </div>
                     </template>
+
+                    <!-- Pagination -->
                     <template
                         x-if="!loading.callBookmarksIndex && paginator && !(paginator.currentPage == 1 && paginator.onLastPage)">
-                        <div class="d-flex justify-content-center gap-1">
+                        <div class="d-flex justify-content-center gap-1 mt-3">
                             <a x-show="paginator?.currentPage > 2" @click="doFilter(() => filters.page = 1, false, false)"
                                 class="cursor-pointer px-2 text-decoration-none text-primary">
                                 <i class="bi bi-chevron-double-left"></i>
@@ -294,11 +347,13 @@
                             </a>
                             <template x-for="n in pageRange()">
                                 <span @click="doFilter(() => filters.page = n, false, false)"
-                                    class="text-decoration-none px-2" x-text="n"
-                                    :class="{ 'cursor-pointer text-primary': paginator?.currentPage != n }"></span>
+                                    class="text-decoration-none px-2 cursor-pointer" x-text="n"
+                                    :class="{ 'fw-bold text-primary': paginator?.currentPage == n, 'text-secondary': paginator
+                                            ?.currentPage != n }">
+                                </span>
                             </template>
                             <a x-show="!paginator?.onLastPage"
-                                @click="doFilter(() =>filters.page = paginator?.currentPage + 1, false, false)"
+                                @click="doFilter(() => filters.page = paginator?.currentPage + 1, false, false)"
                                 class="cursor-pointer px-2 text-decoration-none text-primary">
                                 <i class="bi bi-chevron-right"></i>
                             </a>
@@ -307,6 +362,8 @@
                 </div>
             </div>
         </div>
+
+        <!-- Profile Modal -->
         <div class="modal bg-black-50" tabindex="-1" :class="isProfileModalOpen ? 'd-block' : 'd-none'"
             @click="isProfileModalOpen = false">
             <div class="modal-dialog modal-dialog-scrollable">
@@ -334,6 +391,8 @@
                 </div>
             </div>
         </div>
+
+        <!-- Create Modal -->
         <div class="modal bg-black-50" tabindex="-1" :class="isCreateModalOpen ? 'd-block' : 'd-none'"
             @click="closeCreateModal()">
             <div class="modal-dialog modal-dialog-scrollable">
@@ -344,7 +403,7 @@
                             <i class="bi bi-x-lg cursor-pointer" @click="closeCreateModal()"></i>
                         </div>
                         <div class="d-flex flex-column justify-content-center p-3 py-0 gap-3">
-                            <input class="form-control" x-model="createForm.url">
+                            <input class="form-control" x-model="createForm.url" placeholder="Enter URL...">
                             <button type="button"
                                 class="btn btn-light w-100 rounded-5 d-flex justify-content-center align-items-center gap-2 rounded"
                                 @click="callStoreBookmark()" :disabled="loading.callStoreBookmark">
@@ -385,6 +444,7 @@
             </div>
         </div>
     </div>
+
     <script>
         function data() {
             return {
@@ -401,12 +461,14 @@
                     callNetscapeExport: false,
                     callUpdateBookmark: null,
                     callStoreBookmark: false,
+                    callBulkUpdate: false,
                 },
                 collections: [],
                 bookmarks: [],
+                selectedBookmarks: [],
                 filters: {
                     q: '',
-                    collection: null,
+                    collections: [],
                     read: "ALL",
                     archive: "UNARCHIVED",
                     share: "ALL",
@@ -433,7 +495,6 @@
                 },
                 async doFilter(func, resetCollection = false, resetPage = true) {
                     func();
-                    //
                     this.scrollY = window.scrollY;
                     if (resetCollection) {
                         this.collections = [];
@@ -442,20 +503,23 @@
                     if (resetPage) {
                         this.filters.page = 1;
                     }
-                    this.collectionModalId = null,
-                        this.closeCreateModal();
+                    this.collectionModalId = null;
+                    this.closeCreateModal();
+                    this.selectedBookmarks = [];
                     this.bookmarks = [];
                     await this.callBookmarksIndex();
                     if (!resetPage) {
                         window.scrollTo(0, this.scrollY);
                     }
                 },
+                applyCollectionFilter() {
+                    this.doFilter(() => {}, false);
+                },
                 pageRange(sideCount = 5) {
                     const {
                         perPage,
                         currentPage,
-                        total,
-                        onLastPage
+                        total
                     } = this.paginator;
 
                     const totalPages = Math.ceil(total / perPage);
@@ -484,19 +548,6 @@
                     }
                     return pages;
                 },
-                getDropdownClass(dropdown) {
-                    if (this.dropdown == dropdown) {
-                        return 'd-block';
-                    }
-                    return 'd-none';
-                },
-                setDropdown(newDropdown) {
-                    if (newDropdown && (this.dropdown != newDropdown)) {
-                        this.dropdown = newDropdown;
-                    } else {
-                        this.dropdown = null;
-                    }
-                },
                 async callBookmarksCollections() {
                     try {
                         if (this.loading.callBookmarksCollections) return;
@@ -508,7 +559,7 @@
                         const resJson = await res.json();
 
                         if (res.ok) {
-                            this.collections = resJson.data.collections;
+                            this.collections = resJson.data.collections; 
                         } else {
                             this.$store.alert.error(resJson.message, resJson.errors);
                         }
@@ -525,10 +576,8 @@
                         if (this.loading.callBookmarksIndex) return;
                         this.loading.callBookmarksIndex = true;
 
-                        const filters = JSON.parse(JSON.stringify(this.filters));
-                        if (this.filters.collection === null) {
-                            delete filters.collection;
-                        }
+                        const filters = JSON.parse(JSON.stringify(this.filters)); 
+
                         const res = await this.$store.call.callJson(
                             'GET', this.urls['api.bookmarks.index'], filters, null, true
                         );
@@ -651,9 +700,7 @@
                         this.loading.callNetscapeExport = true;
 
                         const filters = JSON.parse(JSON.stringify(this.filters));
-                        if (this.filters.collection === null) {
-                            delete filters.collection;
-                        }
+                        
                         const res = await this.$store.call.callJson(
                             'GET', this.urls['api.netscape.export'], filters, null, true
                         );
@@ -694,7 +741,7 @@
                         const resJson = await res.json();
 
                         if (res.ok) {
-                            this.$store.alert.success('Bookmarks updated successfully!');
+                            this.$store.alert.success('Bookmark updated successfully!');
                             this.doFilter(() => {}, true, false);
                         } else {
                             this.$store.alert.error(resJson.message, resJson.errors);
@@ -718,7 +765,7 @@
                         const resJson = await res.json();
 
                         if (res.ok) {
-                            this.$store.alert.success('Bookmarks created successfully!');
+                            this.$store.alert.success('Bookmark created successfully!');
                             this.doFilter(() => {});
                         } else {
                             this.$store.alert.error(resJson.message, resJson.errors);
@@ -731,6 +778,88 @@
                         this.loading.callStoreBookmark = false;
                     }
                 },
+                async bulkUpdate(fieldName, fieldValue) {
+                    try {
+                        if (this.loading.callBulkUpdate) return;
+                        if (this.selectedBookmarks.length === 0) {
+                            this.$store.alert.warning('Please select at least one bookmark');
+                            return;
+                        }
+
+                        this.loading.callBulkUpdate = true;
+
+                        const bookmarksData = this.selectedBookmarks.map(id => {
+                            const dataItem = {
+                                id: id
+                            };
+                            dataItem[fieldName] = fieldValue;
+                            return dataItem;
+                        });
+
+                        const res = await this.$store.call.callJson(
+                            'PATCH', this.urls['api.bookmarks.updateAttributes'], null, {
+                                bookmarks: bookmarksData
+                            }, true
+                        );
+                        const resJson = await res.json();
+
+                        if (res.ok) {
+                            this.$store.alert.success('Bookmarks updated successfully!');
+                            this.selectedBookmarks = [];
+                            this.doFilter(() => {}, true, false);
+                        } else {
+                            this.$store.alert.error(resJson.message, resJson.errors);
+                        }
+
+                    } catch (err) {
+                        console.log(err);
+                        this.$store.alert.error('Error');
+                    } finally {
+                        this.loading.callBulkUpdate = false;
+                    }
+                },
+                async bulkUpdateCollection() {
+                    try {
+                        if (this.loading.callBulkUpdate) return;
+                        if (this.selectedBookmarks.length === 0) {
+                            this.$store.alert.warning('Please select at least one bookmark');
+                            return;
+                        }
+
+                        const collectionName = prompt('Enter collection name:');
+                        if (collectionName === null) return;
+
+                        this.loading.callBulkUpdate = true;
+
+                        const bookmarksData = this.selectedBookmarks.map(id => {
+                            return {
+                                id: id,
+                                collection: collectionName
+                            };
+                        });
+
+                        const res = await this.$store.call.callJson(
+                            'PATCH', this.urls['api.bookmarks.updateAttributes'], null, {
+                                bookmarks: bookmarksData
+                            }, true
+                        );
+                        const resJson = await res.json();
+
+                        if (res.ok) {
+                            this.$store.alert.success('Bookmarks updated successfully!');
+                            this.selectedBookmarks = [];
+                            this.doFilter(() => {}, true, false);
+                        } else {
+                            this.$store.alert.error(resJson.message, resJson.errors);
+                        }
+
+                    } catch (err) {
+                        console.log(err);
+                        this.$store.alert.error('Error');
+                    } finally {
+                        this.loading.callBulkUpdate = false;
+                    }
+                }
             }
         }
     </script>
