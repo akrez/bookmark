@@ -21,13 +21,11 @@
         <div class="row">
             <!-- Sidebar Filters -->
             <div class="col-lg-3 col-xl-2 border-end bg-light min-vh-100 p-3">
-                <!-- Search -->
                 <div class="mb-3">
                     <input type="text" class="ps-3 form-control form-control-sm rounded-pill"
                         placeholder="Search bookmarks..." x-model="filters.q">
                 </div>
 
-                <!-- Status Filters -->
                 <div class="mb-3">
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="filterRead" id="readAll" value="ALL"
@@ -100,7 +98,6 @@
                     </div>
                 </div>
 
-                <!-- Collections -->
                 <div class="mb-3">
                     <div x-show="loading.callBookmarksCollections" class="spinner-border spinner-border-sm"></div>
                     <div class="form-check" x-show="!loading.callBookmarksCollections">
@@ -116,11 +113,11 @@
                                 x-text="collection.name"></label>
                         </div>
                     </template>
-                    <div class="mt-2">
-                        <button class="btn btn-sm btn-primary rounded-pill w-100" @click="applyCollectionFilter()">
-                            <i class="bi bi-search"></i> Search
-                        </button>
-                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-primary rounded-pill w-100" @click="applyCollectionFilter()">
+                        <i class="bi bi-search"></i> Search
+                    </button>
                 </div>
             </div>
 
@@ -139,80 +136,7 @@
                     </button>
                 </div>
 
-                <!-- Bulk Actions -->
-                <div class="d-flex align-items-center gap-3 mb-3" x-show="selectedBookmarks.length > 0">
-                    <span class="fw-semibold fs-7" x-text="selectedBookmarks.length + ' selected'"></span>
-                    <button class="btn btn-sm btn-outline-secondary rounded-pill" @click="selectedBookmarks = []">
-                        <i class="bi bi-x-lg"></i> Clear
-                    </button>
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-primary rounded-pill dropdown-toggle" type="button"
-                            data-bs-toggle="dropdown">
-                            <i class="bi bi-gear"></i> Actions
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a class="dropdown-item cursor-pointer" @click="bulkUpdate('is_read', true)">
-                                    <i class="bi bi-bookmark-check"></i> Mark as Read
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item cursor-pointer" @click="bulkUpdate('is_read', false)">
-                                    <i class="bi bi-bookmark"></i> Mark as Unread
-                                </a>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <a class="dropdown-item cursor-pointer" @click="bulkUpdate('is_shared', true)">
-                                    <i class="bi bi-share"></i> Share
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item cursor-pointer" @click="bulkUpdate('is_shared', false)">
-                                    <i class="bi bi-share-slash"></i> Unshare
-                                </a>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <a class="dropdown-item cursor-pointer" @click="bulkUpdate('is_favorited', true)">
-                                    <i class="bi bi-heart-fill text-danger"></i> Favorite
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item cursor-pointer" @click="bulkUpdate('is_favorited', false)">
-                                    <i class="bi bi-heart"></i> Unfavorite
-                                </a>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <a class="dropdown-item cursor-pointer" @click="bulkUpdate('is_archived', true)">
-                                    <i class="bi bi-archive"></i> Archive
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item cursor-pointer" @click="bulkUpdate('is_archived', false)">
-                                    <i class="bi bi-box-arrow-up"></i> Unarchive
-                                </a>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <a class="dropdown-item cursor-pointer" @click="bulkUpdateCollection()">
-                                    <i class="bi bi-collection"></i> Change Collection
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Bookmark List -->
+                <!-- Bookmark Table -->
                 <div class="d-flex flex-column gap-4">
                     <template x-if="loading.callBookmarksIndex">
                         <div class="text-center py-4">
@@ -225,110 +149,155 @@
                             Your search did not match any documents.
                         </div>
                     </template>
-                    <template x-if="!loading.callBookmarksIndex">
-                        <div class="list-group">
-                            <template x-for="bookmark in bookmarks">
-                                <div class="list-group-item border-0 border-bottom py-3 px-0">
-                                    <div class="d-flex align-items-start">
-                                        <!-- Checkbox -->
-                                        <div class="me-3 pt-1">
-                                            <input class="form-check-input" type="checkbox" :value="bookmark.id"
-                                                x-model="selectedBookmarks">
-                                        </div>
-
-                                        <!-- Bookmark Info -->
-                                        <div class="flex-grow-1 overflow-hidden">
-                                            <div class="d-flex align-items-start gap-3">
-                                                <img class="w-favicon pt-1"
-                                                    :src="bookmark.url.favicon ?? bookmark.url.base_url + '/favicon.ico'">
-                                                <div class="flex-grow-1 overflow-hidden">
-                                                    <div class="fs-7 text-decoration-none text-truncate d-block"
-                                                        x-text="bookmark.url.description"
-                                                        x-show="bookmark.url.description">
-                                                    </div>
-                                                    <a class="fs-8 text-decoration-none text-truncate d-block text-secondary"
-                                                        x-text="bookmark.url.url" target="_blank"
-                                                        :href="bookmark.url.url"></a>
-                                                    <a class="fs-5 text-primary text-decoration-none lh-sm text-truncate d-block"
-                                                        x-text="bookmark.url.title" target="_blank"
-                                                        :href="bookmark.url.url"></a>
-                                                    <div class="fs-7 text-secondary" x-text="bookmark.note"
-                                                        x-show="bookmark.note"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Actions -->
-                                    <div class="d-flex flex-wrap gap-3 mt-2 ms-4 ps-1">
-                                        <span class="text-secondary cursor-pointer d-flex align-items-center fs-7"
-                                            :class="{ 'fw-bold': bookmark.read_at }"
-                                            @click="callUpdateBookmark(bookmark.id, 'is_read', bookmark.read_at ? false : true)">
-                                            <i
-                                                :class="loading.callUpdateBookmark == bookmark.id + '-is_read' ?
-                                                    'spinner-border spinner-border-sm' : 'bi-bookmark-check'"></i>
-                                            <span class="ms-1" x-text="bookmark.read_at ? 'Read' : 'Unread'"></span>
-                                        </span>
-                                        <span class="text-secondary cursor-pointer d-flex align-items-center fs-7"
-                                            :class="{ 'fw-bold': bookmark.shared_at }"
-                                            @click="callUpdateBookmark(bookmark.id, 'is_shared', bookmark.shared_at ? false : true)">
-                                            <i
-                                                :class="loading.callUpdateBookmark == bookmark.id + '-is_shared' ?
-                                                    'spinner-border spinner-border-sm' : 'bi bi-share'"></i>
-                                            <span class="ms-1" x-text="bookmark.shared_at ? 'Shared' : 'Share'"></span>
-                                        </span>
-                                        <span class="text-secondary cursor-pointer d-flex align-items-center fs-7"
-                                            :class="{ 'fw-bold': bookmark.favorited_at }"
-                                            @click="callUpdateBookmark(bookmark.id, 'is_favorited', bookmark.favorited_at ? false : true)">
-                                            <i
-                                                :class="loading.callUpdateBookmark == bookmark.id + '-is_favorited' ?
-                                                    'spinner-border spinner-border-sm' : 'bi bi-heart'"></i>
-                                            <span class="ms-1"
-                                                x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
-                                        </span>
-                                        <span class="text-secondary cursor-pointer d-flex align-items-center fs-7"
-                                            :class="{ 'fw-bold': bookmark.archived_at }"
-                                            @click="callUpdateBookmark(bookmark.id, 'is_archived', bookmark.archived_at ? false : true)">
-                                            <i
-                                                :class="loading.callUpdateBookmark == bookmark.id + '-is_archived' ?
-                                                    'spinner-border spinner-border-sm' : 'bi bi-archive'"></i>
-                                            <span class="ms-1"
-                                                x-text="bookmark.archived_at ? 'Archived' : 'Archive'"></span>
-                                        </span>
-                                        <span class="text-secondary cursor-pointer d-flex align-items-center fs-7"
-                                            @click="collectionModalId = ((collectionModalId && collectionModalId == bookmark.id) ? null : bookmark.id)">
-                                            <i
-                                                :class="loading.callUpdateBookmark == bookmark.id + '-collection' ?
-                                                    'spinner-border spinner-border-sm' : 'bi bi-collection'"></i>
-                                            <span class="ms-1" x-text="bookmark.collection"></span>
-                                        </span>
-                                    </div>
-
-                                    <!-- Collection Modal -->
-                                    <template x-if="collectionModalId == bookmark.id">
-                                        <div class="mt-2 ms-4 ps-1 d-flex flex-column p-2 gap-2 rounded bg-light">
+                    <template x-if="!loading.callBookmarksIndex && bookmarks.length > 0">
+                        <div class="table-responsive">
+                            <table class="table table-borderless align-middle mb-0 table-sm">
+                                <!-- THEAD -->
+                                <thead class="bg-light border-bottom">
+                                    <!-- Row 1: Labels (clickable) -->
+                                    <tr>
+                                        <th class="width-0">
+                                            <input class="form-check-input m-0" type="checkbox"
+                                                @click="selectAll = !selectAll; selectedBookmarks = selectAll ? bookmarks.map(b => b.id) : []">
+                                        </th>
+                                        <th class="width-0">
+                                            <select class="form-control fs-8 p-1">
+                                                <option value="1">One</option>
+                                                <option value="2">Two</option>
+                                            </select>
+                                        </th>
+                                        <th class="width-0">
+                                            <select class="form-control fs-8 p-1">
+                                                <option value="1">One</option>
+                                                <option value="2">Two</option>
+                                            </select>
+                                        </th>
+                                        <th class="width-0">
+                                            <select class="form-control fs-8 p-1">
+                                                <option value="1">One</option>
+                                                <option value="2">Two</option>
+                                            </select>
+                                        </th>
+                                        <th class="width-0">
+                                            <select class="form-control fs-8 p-1">
+                                                <option value="1">aaaaaaaaa</option>
+                                                <option value="2">bbbbbbbbb</option>
+                                            </select>
+                                        </th>
+                                        <th class="width-0">
+                                            <button class="btn btn-outline-secondary w-100 fs-8 p-1 px-2">
+                                                <i class="bi bi-check2"></i>
+                                            </button>
+                                        </th>
+                                        <th class="col-1">
                                             <div class="input-group input-group-sm">
-                                                <input type="text" class="form-control"
+                                                <select class="form-control fs-8 p-1"
                                                     x-model="collectionForms[bookmark.id]">
-                                                <button class="btn btn-outline-secondary"
+                                                    <option value="1">aaaaaaaaa</option>
+                                                    <option value="2">bbbbbbbbb</option>
+                                                </select>
+                                                <button class="btn btn-outline-secondary fs-8 p-1 px-2"
                                                     @click="callUpdateBookmark(bookmark.id, 'collection', collectionForms[bookmark.id])">
                                                     <i class="bi bi-check2"></i>
                                                 </button>
                                             </div>
-                                            <div class="d-flex flex-wrap gap-2">
-                                                <span class="badge bg-light text-dark border cursor-pointer"
-                                                    @click="callUpdateBookmark(bookmark.id, 'collection', '')">
+                                        </th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <template x-for="(bookmark, index) in bookmarks">
+                                    <tbody class="border-top">
+                                        <tr class="text-truncate">
+                                            <td class="text-center align-top w-favicon line-height-1 pb-0 text-truncate">
+                                                <img class="w-favicon pt-1"
+                                                    :src="bookmark.url.favicon ?? bookmark.url.base_url + '/favicon.ico'"
+                                                    onerror="this.style.display='none'">
+                                            </td>
+                                            <td class="pb-0 text-truncate" colspan="99">
+                                                <a class="d-block overflow-hidden text-decoration-none text-truncate"
+                                                    target="_blank" :href="bookmark.url.url">
+                                                    <div class="fs-7 text-decoration-none text-truncate d-block text-secondary"
+                                                        x-text="bookmark.url.description"
+                                                        x-show="bookmark.url.description">
+                                                    </div>
+                                                    <div class="fs-8 text-truncate text-secondary"
+                                                        x-text="bookmark.url.url"></div>
+                                                    <div class="fs-6 text-truncate text-primary lh-sm"
+                                                        x-text="bookmark.url.title"></div>
+                                                    <div class="fs-7 text-secondary" x-text="bookmark.note"
+                                                        x-show="bookmark.note"></div>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <tr class="border-0">
+                                            <td class="text-center">
+                                                <input class="form-check-input" type="checkbox" :value="bookmark.id"
+                                                    x-model="selectedBookmarks">
+                                            </td>
+                                            <td class="text-center">
+                                                <span
+                                                    class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-7"
+                                                    :class="{ 'fw-bold text-success': bookmark.read_at }"
+                                                    @click="callUpdateBookmark(bookmark.id, 'is_read', bookmark.read_at ? false : true)">
+                                                    <i
+                                                        :class="loading.callUpdateBookmark == bookmark.id + '-is_read' ?
+                                                            'spinner-border spinner-border-sm' : (bookmark.read_at ?
+                                                                'bi-bookmark-check-fill' : 'bi-bookmark-check')"></i>
+                                                    <span x-text="bookmark.read_at ? 'Read' : 'Unread'"></span>
                                                 </span>
-                                                <template x-for="collection in collections">
-                                                    <span class="badge bg-light text-dark border cursor-pointer"
-                                                        x-text="collection.name"
-                                                        @click="callUpdateBookmark(bookmark.id, 'collection', collection.name)"></span>
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </template>
-                                </div>
-                            </template>
+                                            </td>
+                                            <td class="text-center">
+                                                <span
+                                                    class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-7"
+                                                    :class="{ 'fw-bold text-primary': bookmark.shared_at }"
+                                                    @click="callUpdateBookmark(bookmark.id, 'is_shared', bookmark.shared_at ? false : true)">
+                                                    <i
+                                                        :class="loading.callUpdateBookmark == bookmark.id + '-is_shared' ?
+                                                            'spinner-border spinner-border-sm' : (bookmark.shared_at ?
+                                                                'bi-share-fill' : 'bi-share')"></i>
+                                                    <span x-text="bookmark.shared_at ? 'Shared' : 'Share'"></span>
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span
+                                                    class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-7"
+                                                    :class="{ 'fw-bold text-danger': bookmark.favorited_at }"
+                                                    @click="callUpdateBookmark(bookmark.id, 'is_favorited', bookmark.favorited_at ? false : true)">
+                                                    <i
+                                                        :class="loading.callUpdateBookmark == bookmark.id + '-is_favorited' ?
+                                                            'spinner-border spinner-border-sm' : (bookmark
+                                                                .favorited_at ? 'bi-heart-fill' : 'bi-heart')"></i>
+                                                    <span x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span
+                                                    class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-7"
+                                                    :class="{ 'fw-bold text-warning': bookmark.archived_at }"
+                                                    @click="callUpdateBookmark(bookmark.id, 'is_archived', bookmark.archived_at ? false : true)">
+                                                    <i
+                                                        :class="loading.callUpdateBookmark == bookmark.id + '-is_archived' ?
+                                                            'spinner-border spinner-border-sm' : (bookmark.archived_at ?
+                                                                'bi-archive-fill' : 'bi-archive')"></i>
+                                                    <span x-text="bookmark.archived_at ? 'Archived' : 'Archive'"></span>
+                                                </span>
+                                            </td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center">
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" class="form-control fs-8 p-1"
+                                                        x-model="collectionForms[bookmark.id]">
+                                                    <button class="btn btn-outline-secondary fs-8 p-1 px-2"
+                                                        @click="callUpdateBookmark(bookmark.id, 'collection', collectionForms[bookmark.id])">
+                                                        <i class="bi bi-check2"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td class="text-center"></td>
+                                        </tr>
+                                    </tbody>
+                                </template>
+                            </table>
                         </div>
                     </template>
 
@@ -348,8 +317,11 @@
                             <template x-for="n in pageRange()">
                                 <span @click="doFilter(() => filters.page = n, false, false)"
                                     class="text-decoration-none px-2 cursor-pointer" x-text="n"
-                                    :class="{ 'fw-bold text-primary': paginator?.currentPage == n, 'text-secondary': paginator
-                                            ?.currentPage != n }">
+                                    :class="{
+                                        'fw-bold text-primary': paginator?.currentPage == n,
+                                        'text-secondary': paginator
+                                            ?.currentPage != n
+                                    }">
                                 </span>
                             </template>
                             <a x-show="!paginator?.onLastPage"
@@ -453,6 +425,7 @@
                 isCreateModalOpen: false,
                 collectionModalId: null,
                 netscapeImportFile: null,
+                selectAll: false,
                 loading: {
                     callBookmarksCollections: false,
                     callBookmarksIndex: false,
@@ -482,12 +455,7 @@
                 createForm: {
                     url: null,
                 },
-                init() {
-                    this.$watch('filters.q', () => {
-                        this.doFilter(() => {});
-                    }, {
-                        deep: true
-                    });
+                init() { 
                 },
                 async initData(initParams) {
                     this.urls = initParams.urls;
@@ -506,6 +474,7 @@
                     this.collectionModalId = null;
                     this.closeCreateModal();
                     this.selectedBookmarks = [];
+                    this.selectAll = false;
                     this.bookmarks = [];
                     await this.callBookmarksIndex();
                     if (!resetPage) {
@@ -559,7 +528,7 @@
                         const resJson = await res.json();
 
                         if (res.ok) {
-                            this.collections = resJson.data.collections; 
+                            this.collections = resJson.data.collections;
                         } else {
                             this.$store.alert.error(resJson.message, resJson.errors);
                         }
@@ -576,7 +545,7 @@
                         if (this.loading.callBookmarksIndex) return;
                         this.loading.callBookmarksIndex = true;
 
-                        const filters = JSON.parse(JSON.stringify(this.filters)); 
+                        const filters = JSON.parse(JSON.stringify(this.filters));
 
                         const res = await this.$store.call.callJson(
                             'GET', this.urls['api.bookmarks.index'], filters, null, true
@@ -700,7 +669,7 @@
                         this.loading.callNetscapeExport = true;
 
                         const filters = JSON.parse(JSON.stringify(this.filters));
-                        
+
                         const res = await this.$store.call.callJson(
                             'GET', this.urls['api.netscape.export'], filters, null, true
                         );
@@ -806,6 +775,7 @@
                         if (res.ok) {
                             this.$store.alert.success('Bookmarks updated successfully!');
                             this.selectedBookmarks = [];
+                            this.selectAll = false;
                             this.doFilter(() => {}, true, false);
                         } else {
                             this.$store.alert.error(resJson.message, resJson.errors);
@@ -848,6 +818,7 @@
                         if (res.ok) {
                             this.$store.alert.success('Bookmarks updated successfully!');
                             this.selectedBookmarks = [];
+                            this.selectAll = false;
                             this.doFilter(() => {}, true, false);
                         } else {
                             this.$store.alert.error(resJson.message, resJson.errors);
