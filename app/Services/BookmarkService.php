@@ -111,7 +111,13 @@ class BookmarkService extends Service
     public function store(int $userId, array $input, ?CarbonInterface $createdAt = null)
     {
         $validator = Validator::make($input, [
-            'url_id' => ['required', 'integer', Rule::exists('urls', 'id')],
+            'url_id' => [
+                'required',
+                'integer',
+                Rule::exists('urls', 'id'),
+                Rule::unique('bookmarks', 'url_id')
+                    ->where('user_id', $userId)
+            ],
             'collection' => ['nullable', 'string', 'max:512'],
             'note' => ['nullable', 'string'],
         ]);
