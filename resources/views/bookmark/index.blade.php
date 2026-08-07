@@ -158,51 +158,71 @@
                                     <tr>
                                         <th class="width-0">
                                             <input class="form-check-input m-0" type="checkbox"
-                                                @click="selectAll = !selectAll; selectedBookmarks = selectAll ? bookmarks.map(b => b.id) : []">
+                                                @click="selectAll = !selectAll; selectedBookmarks = (selectAll ? bookmarks.map(b => b.id) : [])">
                                         </th>
                                         <th class="width-0">
-                                            <select class="form-control fs-8 p-1">
-                                                <option value="1">One</option>
-                                                <option value="2">Two</option>
+                                            <select class="form-control fs-8 p-1"
+                                                :disabled="selectedBookmarks.length === 0" x-model="bulkActions.is_read">
+                                                <option></option>
+                                                <option value="true">Read</option>
+                                                <option value="false">UnRead</option>
                                             </select>
                                         </th>
                                         <th class="width-0">
-                                            <select class="form-control fs-8 p-1">
-                                                <option value="1">One</option>
-                                                <option value="2">Two</option>
+                                            <select class="form-control fs-8 p-1"
+                                                :disabled="selectedBookmarks.length === 0" x-model="bulkActions.is_shared">
+                                                <option></option>
+                                                <option value="true">Share</option>
+                                                <option value="false">UnShare</option>
                                             </select>
                                         </th>
                                         <th class="width-0">
-                                            <select class="form-control fs-8 p-1">
-                                                <option value="1">One</option>
-                                                <option value="2">Two</option>
+                                            <select class="form-control fs-8 p-1"
+                                                :disabled="selectedBookmarks.length === 0" x-model="bulkActions.is_favorited">
+                                                <option></option>
+                                                <option value="true">Favorited</option>
+                                                <option value="false">UnFavorited</option>
                                             </select>
                                         </th>
                                         <th class="width-0">
-                                            <select class="form-control fs-8 p-1">
-                                                <option value="1">aaaaaaaaa</option>
-                                                <option value="2">bbbbbbbbb</option>
+                                            <select class="form-control fs-8 p-1"
+                                                :disabled="selectedBookmarks.length === 0" x-model="bulkActions.is_archived">
+                                                <option></option>
+                                                <option value="true">Archive</option>
+                                                <option value="false">UnArchive</option>
                                             </select>
                                         </th>
                                         <th class="width-0">
-                                            <button class="btn btn-outline-secondary w-100 fs-8 p-1 px-2">
-                                                <i class="bi bi-check2"></i>
+                                            <button class="btn btn-outline-secondary w-100 fs-8 p-1 px-2"
+                                                :disabled="selectedBookmarks.length === 0 || !hasBulkActions()"
+                                                @click="applyUpdateBookmarks()">
+                                                <i
+                                                    :class="loading.callBulkUpdate ? 'spinner-border spinner-border-sm' :
+                                                        'bi bi-check2'"></i>
                                             </button>
                                         </th>
-                                        <th class="col-1">
+                                        <th class="text-center" style="width: 120px;">
                                             <div class="input-group input-group-sm">
                                                 <select class="form-control fs-8 p-1"
-                                                    x-model="collectionForms[bookmark.id]">
-                                                    <option value="1">aaaaaaaaa</option>
-                                                    <option value="2">bbbbbbbbb</option>
+                                                    :disabled="selectedBookmarks.length === 0"
+                                                    x-model="bulkActions.collection">
+                                                    <option></option>
+                                                    <option value="set">Set collection</option>
+                                                    <option value="remove">Remove collection</option>
                                                 </select>
                                                 <button class="btn btn-outline-secondary fs-8 p-1 px-2"
-                                                    @click="callUpdateBookmark(bookmark.id, 'collection', collectionForms[bookmark.id])">
-                                                    <i class="bi bi-check2"></i>
+                                                    :disabled="selectedBookmarks.length === 0 || !bulkActions.collection"
+                                                    @click="applyBulkCollection()">
+                                                    <i
+                                                        :class="loading.callBulkCollection ?
+                                                            'spinner-border spinner-border-sm' : 'bi bi-check2'"></i>
                                                 </button>
                                             </div>
                                         </th>
-                                        <th></th>
+                                        <th class="text-center"></th>
+                                        <th class="text-center"></th>
+                                        <th class="text-center"></th>
+                                        <th class="text-center"></th>
                                     </tr>
                                 </thead>
                                 <template x-for="(bookmark, index) in bookmarks">
@@ -288,7 +308,7 @@
                                                     <input type="text" class="form-control fs-8 p-1"
                                                         x-model="collectionForms[bookmark.id]">
                                                     <button class="btn btn-outline-secondary fs-8 p-1 px-2"
-                                                        @click="callUpdateBookmark(bookmark.id, 'collection', collectionForms[bookmark.id])">
+                                                        @click="callUpdateBookmark(bookmark.id, 'collection', collectionForms[bookmark.id], true)">
                                                         <i class="bi bi-check2"></i>
                                                     </button>
                                                 </div>
@@ -434,7 +454,7 @@
                     callNetscapeExport: false,
                     callUpdateBookmark: null,
                     callStoreBookmark: false,
-                    callBulkUpdate: false,
+                    callUpdateBookmarks: null,
                 },
                 collections: [],
                 bookmarks: [],
@@ -448,6 +468,13 @@
                     favorite: "ALL",
                     page: 1
                 },
+                bulkActions: {
+                    is_read: '',
+                    is_shared: '',
+                    is_favorited: '',
+                    is_archived: '',
+                    collection: '',
+                },
                 scrollY: null,
                 dropdown: null,
                 paginator: null,
@@ -455,8 +482,7 @@
                 createForm: {
                     url: null,
                 },
-                init() { 
-                },
+                init() {},
                 async initData(initParams) {
                     this.urls = initParams.urls;
                     this.doFilter(() => {}, true);
@@ -516,6 +542,12 @@
                         pages.push(i);
                     }
                     return pages;
+                },
+                hasBulkActions() {
+                    return this.bulkActions.read !== '' ||
+                        this.bulkActions.share !== '' ||
+                        this.bulkActions.favorite !== '' ||
+                        this.bulkActions.archive !== '';
                 },
                 async callBookmarksCollections() {
                     try {
@@ -692,26 +724,64 @@
                         this.loading.callNetscapeExport = false;
                     }
                 },
-                async callUpdateBookmark(bookmarkId, fieldName, fieldValue) {
+                async callUpdateBookmark(bookmarkId, fieldName, fieldValue, resetCollection = false) {
                     try {
                         if (this.loading.callUpdateBookmark) return;
                         this.loading.callUpdateBookmark = bookmarkId + '-' + fieldName;
 
-                        const dataItem = {
-                            id: bookmarkId
-                        };
-                        dataItem[fieldName] = fieldValue;
+                        const data = {};
+                        data[fieldName] = fieldValue;
+
+                        return this.callUpdateBookmarks([bookmarkId], data);
+
+                    } catch (err) {
+                        console.log(err);
+                        this.$store.alert.error('Error');
+                    } finally {
+                        this.loading.callUpdateBookmark = null;
+                    }
+                },
+                async applyUpdateBookmarks() {
+                    if (this.selectedBookmarks.length === 0) {
+                        return;
+                    }
+
+                    if (!this.hasBulkActions()) {
+                        return;
+                    }
+
+                    const data = {};
+                    if (this.bulkActions.is_read !== '') {
+                        data['is_read'] = this.bulkActions.is_read === 'true';
+                    }
+                    if (this.bulkActions.is_shared !== '') {
+                        data['is_shared'] = this.bulkActions.is_shared === 'true';
+                    }
+                    if (this.bulkActions.is_favorited !== '') {
+                        data['is_favorited'] = this.bulkActions.is_favorited === 'true';
+                    }
+                    if (this.bulkActions.is_archived !== '') {
+                        data['is_archived'] = this.bulkActions.is_archived === 'true';
+                    }
+
+                    this.callUpdateBookmarks(this.selectedBookmarks, data);
+                },
+                async callUpdateBookmarks(ids, data, resetCollection = false) {
+                    try {
+                        if (this.loading.callUpdateBookmarks) return;
+                        this.loading.callUpdateBookmarks = true;
 
                         const res = await this.$store.call.callJson(
                             'PATCH', this.urls['api.bookmarks.updateAttributes'], null, {
-                                bookmarks: [dataItem]
+                                ids: ids,
+                                ...data
                             }, true
                         );
                         const resJson = await res.json();
 
                         if (res.ok) {
                             this.$store.alert.success('Bookmark updated successfully!');
-                            this.doFilter(() => {}, true, false);
+                            this.doFilter(() => {}, resetCollection, false);
                         } else {
                             this.$store.alert.error(resJson.message, resJson.errors);
                         }
@@ -720,7 +790,7 @@
                         console.log(err);
                         this.$store.alert.error('Error');
                     } finally {
-                        this.loading.callUpdateBookmark = null;
+                        this.loading.callUpdateBookmarks = false;
                     }
                 },
                 async callStoreBookmark() {
@@ -745,90 +815,6 @@
                         this.$store.alert.error('Error');
                     } finally {
                         this.loading.callStoreBookmark = false;
-                    }
-                },
-                async bulkUpdate(fieldName, fieldValue) {
-                    try {
-                        if (this.loading.callBulkUpdate) return;
-                        if (this.selectedBookmarks.length === 0) {
-                            this.$store.alert.warning('Please select at least one bookmark');
-                            return;
-                        }
-
-                        this.loading.callBulkUpdate = true;
-
-                        const bookmarksData = this.selectedBookmarks.map(id => {
-                            const dataItem = {
-                                id: id
-                            };
-                            dataItem[fieldName] = fieldValue;
-                            return dataItem;
-                        });
-
-                        const res = await this.$store.call.callJson(
-                            'PATCH', this.urls['api.bookmarks.updateAttributes'], null, {
-                                bookmarks: bookmarksData
-                            }, true
-                        );
-                        const resJson = await res.json();
-
-                        if (res.ok) {
-                            this.$store.alert.success('Bookmarks updated successfully!');
-                            this.selectedBookmarks = [];
-                            this.selectAll = false;
-                            this.doFilter(() => {}, true, false);
-                        } else {
-                            this.$store.alert.error(resJson.message, resJson.errors);
-                        }
-
-                    } catch (err) {
-                        console.log(err);
-                        this.$store.alert.error('Error');
-                    } finally {
-                        this.loading.callBulkUpdate = false;
-                    }
-                },
-                async bulkUpdateCollection() {
-                    try {
-                        if (this.loading.callBulkUpdate) return;
-                        if (this.selectedBookmarks.length === 0) {
-                            this.$store.alert.warning('Please select at least one bookmark');
-                            return;
-                        }
-
-                        const collectionName = prompt('Enter collection name:');
-                        if (collectionName === null) return;
-
-                        this.loading.callBulkUpdate = true;
-
-                        const bookmarksData = this.selectedBookmarks.map(id => {
-                            return {
-                                id: id,
-                                collection: collectionName
-                            };
-                        });
-
-                        const res = await this.$store.call.callJson(
-                            'PATCH', this.urls['api.bookmarks.updateAttributes'], null, {
-                                bookmarks: bookmarksData
-                            }, true
-                        );
-                        const resJson = await res.json();
-
-                        if (res.ok) {
-                            this.$store.alert.success('Bookmarks updated successfully!');
-                            this.selectedBookmarks = [];
-                            this.selectAll = false;
-                            this.doFilter(() => {}, true, false);
-                        } else {
-                            this.$store.alert.error(resJson.message, resJson.errors);
-                        }
-
-                    } catch (err) {
-                        console.log(err);
-                        this.$store.alert.error('Error');
-                    } finally {
-                        this.loading.callBulkUpdate = false;
                     }
                 }
             }
