@@ -22,7 +22,8 @@ class BookmarkService extends Service
     {
         $payload['page'] = empty($payload['page']) ? 1 : intval($payload['page']);
         $validator = Validator::make($payload, [
-            'collection' => ['sometimes', 'nullable', 'string', 'max:512'],
+            'collections' => ['sometimes', 'array'],
+            'collections.*' => ['sometimes', 'nullable', 'string', 'max:512'],
             'q' => ['sometimes', 'nullable', 'string'],
             'archive' => ['sometimes', Rule::in(BookmarkArchiveEnum::names())],
             'share' => ['sometimes', Rule::in(BookmarkShareEnum::names())],
@@ -68,8 +69,16 @@ class BookmarkService extends Service
             }
         });
 
-        $query->when(array_key_exists('collection', $validated), function ($query) use ($validated) {
-            $query = $query->where('collection', $validated['collection']);
+        $query->when(array_key_exists('collections', $validated), function ($query) use ($validated) {
+            $collections = $validated['collections'];
+            $searchNull = in_array('', $collections, true) || in_array(null, $collections, true);
+            if ($searchNull) {
+                $query->where(function ($query) use ($collections) {
+                    $query = $query->whereIn('collection', $collections)->orWhereNull('collection');
+                });
+            } else {
+                $query = $query->whereIn('collection', $collections);
+            }
         });
 
         $query->when(array_key_exists('q', $validated) && $validated['q'], function ($query) use ($validated) {
@@ -181,10 +190,12 @@ class BookmarkService extends Service
 
     public function updateAttributes(int $userId, array $input)
     {
-        $ids = collect($input['bookmarks'] ?? [])
-            ->pluck('id')
+        $ids = collect($input['ids'] ?? [])
+            ->map(fn ($id) => (int) trim((string) $id))
+            ->filter()
             ->unique()
-            ->values();
+            ->values()
+            ->toArray();
         $bookmarks = Bookmark::query()
             ->where('user_id', $userId)
             ->whereIn('id', $ids)
@@ -193,38 +204,38 @@ class BookmarkService extends Service
         $bookmarkIds = $bookmarks->keys();
 
         $validator = Validator::make($input, [
-            'bookmarks' => ['required', 'array'],
-            'bookmarks.*.id' => ['required', 'integer', Rule::in($bookmarkIds)],
-            'bookmarks.*.collection' => ['sometimes', 'nullable', 'string', 'max:512'],
-            'bookmarks.*.is_favorited' => ['sometimes', 'nullable', 'boolean'],
-            'bookmarks.*.is_read' => ['sometimes', 'nullable', 'boolean'],
-            'bookmarks.*.is_archived' => ['sometimes', 'nullable', 'boolean'],
-            'bookmarks.*.is_shared' => ['sometimes', 'nullable', 'boolean'],
-            'bookmarks.*.note' => ['sometimes', 'string'],
+            'ids' => ['required', 'array'],
+            'ids.*' => ['required', 'integer', Rule::in($bookmarkIds)],
+            'collection' => ['sometimes', 'nullable', 'string', 'max:512'],
+            'is_favorited' => ['sometimes', 'nullable', 'boolean'],
+            'is_read' => ['sometimes', 'nullable', 'boolean'],
+            'is_archived' => ['sometimes', 'nullable', 'boolean'],
+            'is_shared' => ['sometimes', 'nullable', 'boolean'],
+            'note' => ['sometimes', 'string'],
         ]);
         if ($validator->fails()) {
             return ApiResponse::makeFromValidator($validator);
         }
-        $validatedDatas = $validator->validated();
+        $validated = $validator->validated();
 
-        foreach ($validatedDatas['bookmarks'] as $validated) {
-            $updateData = [];
-            foreach ($validated as $validatedAttributeName => $validatedAttributeValue) {
-                if ($validatedAttributeName === 'collection') {
-                    $updateData['collection'] = $validatedAttributeValue;
-                } elseif ($validatedAttributeName === 'is_read') {
-                    $updateData['read_at'] = $this->booleanToDate($validatedAttributeValue);
-                } elseif ($validatedAttributeName === 'is_archived') {
-                    $updateData['archived_at'] = $this->booleanToDate($validatedAttributeValue);
-                } elseif ($validatedAttributeName === 'is_shared') {
-                    $updateData['shared_at'] = $this->booleanToDate($validatedAttributeValue);
-                } elseif ($validatedAttributeName === 'is_favorited') {
-                    $updateData['favorited_at'] = $this->booleanToDate($validatedAttributeValue);
-                } elseif ($validatedAttributeName === 'note') {
-                    $updateData['note'] = $validatedAttributeValue;
-                }
+        $updateData = [];
+        foreach ($validated as $validatedAttributeName => $validatedAttributeValue) {
+            if ($validatedAttributeName === 'collection') {
+                $updateData['collection'] = $validatedAttributeValue;
+            } elseif ($validatedAttributeName === 'is_read') {
+                $updateData['read_at'] = $this->booleanToDate($validatedAttributeValue);
+            } elseif ($validatedAttributeName === 'is_archived') {
+                $updateData['archived_at'] = $this->booleanToDate($validatedAttributeValue);
+            } elseif ($validatedAttributeName === 'is_shared') {
+                $updateData['shared_at'] = $this->booleanToDate($validatedAttributeValue);
+            } elseif ($validatedAttributeName === 'is_favorited') {
+                $updateData['favorited_at'] = $this->booleanToDate($validatedAttributeValue);
+            } elseif ($validatedAttributeName === 'note') {
+                $updateData['note'] = $validatedAttributeValue;
             }
-            $id = $validated['id'];
+        }
+
+        foreach ($validated['ids'] as $id) {
             if ($updateData && ! $bookmarks[$id]->update($updateData)) {
                 return ApiResponse::make(500);
             }

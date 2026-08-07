@@ -12,6 +12,14 @@
     font-family: "Open Sans", Arial, "sans-serif";
 }
 
+.line-height-1 {
+    line-height: 1;
+}
+
+.width-0 {
+    width: 0;
+}
+
 .cursor-pointer {
     cursor: pointer;
 }
@@ -21,8 +29,9 @@
     -moz-user-select: none;
     user-select: none;
 }
-.w-32 {
-    width: 32px;
+
+.w-favicon {
+    width: 18px;
 }
 
 .fs-7 {
@@ -44,4 +53,9 @@
 
 .bg-black-50 {
     background-color: rgba(0, 0, 0, 0.5);
+}
+
+table.no-padding td,
+table.no-padding th {
+    padding: 0 !important;
 }

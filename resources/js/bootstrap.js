@@ -4,7 +4,9 @@ window.Alpine = Alpine;
 import Swal from "sweetalert2";
 window.Swal = Swal;
 
-import { saveAs } from 'file-saver';
+import { saveAs } from "file-saver";
+
+import "@fontsource/open-sans";
 
 import axios from "axios";
 window.axios = axios;

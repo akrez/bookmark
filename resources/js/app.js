@@ -24,11 +24,20 @@ document.addEventListener("alpine:init", () => {
             let finalUrl = url;
 
             if (queryData) {
-                const params = new URLSearchParams(queryData);
-                const queryString = params.toString();
-                if (queryString) {
-                    finalUrl = url + "?" + queryString;
+                const params = new URLSearchParams();
+                for (const [key, value] of Object.entries(queryData)) {
+                    if (value === null) {
+                    } else if (Array.isArray(value)) {
+                        value.forEach((v) => params.append(`${key}[]`, v));
+                    } else if (typeof value === "object") {
+                        for (const [k, v] of Object.entries(value)) {
+                            params.append(`${key}[${k}]`, v);
+                        }
+                    } else {
+                        params.append(key, value);
+                    }
                 }
+                finalUrl = `${url}?${params.toString()}`;
             }
 
             const headers = {

@@ -207,12 +207,14 @@
                                                     :disabled="selectedBookmarks.length === 0"
                                                     x-model="bulkActions.collection">
                                                     <option></option>
-                                                    <option value="set">Set collection</option>
-                                                    <option value="remove">Remove collection</option>
+                                                    <template x-for="collection in collections"
+                                                        x-show="!loading.callBookmarksCollections">
+                                                        <option :value="collection.name" x-text="collection.name"></option>
+                                                    </template>
                                                 </select>
                                                 <button class="btn btn-outline-secondary fs-8 p-1 px-2"
-                                                    :disabled="selectedBookmarks.length === 0 || !bulkActions.collection"
-                                                    @click="applyBulkCollection()">
+                                                    :disabled="selectedBookmarks.length === 0"
+                                                    @click="applyUpdateBookmarksCollection()">
                                                     <i
                                                         :class="loading.callBulkCollection ?
                                                             'spinner-border spinner-border-sm' : 'bi bi-check2'"></i>
@@ -732,7 +734,7 @@
                         const data = {};
                         data[fieldName] = fieldValue;
 
-                        return this.callUpdateBookmarks([bookmarkId], data);
+                        return this.callUpdateBookmarks([bookmarkId], data, resetCollection);
 
                     } catch (err) {
                         console.log(err);
@@ -765,6 +767,17 @@
                     }
 
                     this.callUpdateBookmarks(this.selectedBookmarks, data);
+                },
+                async applyUpdateBookmarksCollection() {
+                    if (this.selectedBookmarks.length === 0) {
+                        return;
+                    }
+
+                    const data = {
+                        collection: this.bulkActions.collection
+                    };
+
+                    this.callUpdateBookmarks(this.selectedBookmarks, data, true);
                 },
                 async callUpdateBookmarks(ids, data, resetCollection = false) {
                     try {
