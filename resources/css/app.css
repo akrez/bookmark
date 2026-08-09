@@ -16,6 +16,10 @@
     line-height: 1;
 }
 
+.table-fixed {
+    table-layout: fixed;
+}
+
 .width-0 {
     width: 0;
 }

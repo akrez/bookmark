@@ -151,16 +151,29 @@
                     </template>
                     <template x-if="!loading.callBookmarksIndex && bookmarks.length > 0">
                         <div class="table-responsive">
-                            <table class="table table-borderless align-middle mb-0 table-sm">
+                            <table class="table table-borderless table-fixed mb-0 table-sm w-100">
+                                <colgroup>
+                                    <col class="width-fit">
+                                    <col style="width: 7%">
+                                    <col style="width: 7%">
+                                    <col style="width: 7%">
+                                    <col style="width: 7%">
+                                    <col style="width: 6%">
+                                    <col style="width: 15%">
+                                    <col>
+                                    <col>
+                                    <col>
+                                    <col>
+                                </colgroup>
                                 <!-- THEAD -->
                                 <thead class="bg-light border-bottom">
                                     <!-- Row 1: Labels (clickable) -->
                                     <tr>
-                                        <th class="width-0">
+                                        <th class="">
                                             <input class="form-check-input m-0" type="checkbox"
                                                 @click="selectAll = !selectAll; selectedBookmarks = (selectAll ? bookmarks.map(b => b.id) : [])">
                                         </th>
-                                        <th class="width-0">
+                                        <th class="">
                                             <select class="form-control fs-8 p-1"
                                                 :disabled="selectedBookmarks.length === 0" x-model="bulkActions.is_read">
                                                 <option></option>
@@ -168,7 +181,7 @@
                                                 <option value="false">UnRead</option>
                                             </select>
                                         </th>
-                                        <th class="width-0">
+                                        <th class="">
                                             <select class="form-control fs-8 p-1"
                                                 :disabled="selectedBookmarks.length === 0" x-model="bulkActions.is_shared">
                                                 <option></option>
@@ -176,23 +189,25 @@
                                                 <option value="false">UnShare</option>
                                             </select>
                                         </th>
-                                        <th class="width-0">
+                                        <th class="">
                                             <select class="form-control fs-8 p-1"
-                                                :disabled="selectedBookmarks.length === 0" x-model="bulkActions.is_favorited">
+                                                :disabled="selectedBookmarks.length === 0"
+                                                x-model="bulkActions.is_favorited">
                                                 <option></option>
                                                 <option value="true">Favorited</option>
                                                 <option value="false">UnFavorited</option>
                                             </select>
                                         </th>
-                                        <th class="width-0">
+                                        <th class="">
                                             <select class="form-control fs-8 p-1"
-                                                :disabled="selectedBookmarks.length === 0" x-model="bulkActions.is_archived">
+                                                :disabled="selectedBookmarks.length === 0"
+                                                x-model="bulkActions.is_archived">
                                                 <option></option>
                                                 <option value="true">Archive</option>
                                                 <option value="false">UnArchive</option>
                                             </select>
                                         </th>
-                                        <th class="width-0">
+                                        <th class="">
                                             <button class="btn btn-outline-secondary w-100 fs-8 p-1 px-2"
                                                 :disabled="selectedBookmarks.length === 0 || !hasBulkActions()"
                                                 @click="applyUpdateBookmarks()">
@@ -201,7 +216,7 @@
                                                         'bi bi-check2'"></i>
                                             </button>
                                         </th>
-                                        <th class="text-center" style="width: 120px;">
+                                        <th class="text-center">
                                             <div class="input-group input-group-sm">
                                                 <select class="form-control fs-8 p-1"
                                                     :disabled="selectedBookmarks.length === 0"
@@ -209,7 +224,8 @@
                                                     <option></option>
                                                     <template x-for="collection in collections"
                                                         x-show="!loading.callBookmarksCollections">
-                                                        <option :value="collection.name" x-text="collection.name"></option>
+                                                        <option :value="collection.name" x-text="collection.name">
+                                                        </option>
                                                     </template>
                                                 </select>
                                                 <button class="btn btn-outline-secondary fs-8 p-1 px-2"
@@ -235,7 +251,7 @@
                                                     :src="bookmark.url.favicon ?? bookmark.url.base_url + '/favicon.ico'"
                                                     onerror="this.style.display='none'">
                                             </td>
-                                            <td class="pb-0 text-truncate" colspan="99">
+                                            <td class="pb-0 text-truncate" colspan="10">
                                                 <a class="d-block overflow-hidden text-decoration-none text-truncate"
                                                     target="_blank" :href="bookmark.url.url">
                                                     <div class="fs-7 text-decoration-none text-truncate d-block text-secondary"
@@ -315,6 +331,9 @@
                                                     </button>
                                                 </div>
                                             </td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
                                             <td class="text-center"></td>
                                         </tr>
                                     </tbody>
