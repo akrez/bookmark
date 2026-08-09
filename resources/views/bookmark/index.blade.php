@@ -26,76 +26,45 @@
                         placeholder="Search bookmarks..." x-model="filters.q">
                 </div>
 
-                <div class="mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="filterRead" id="readAll" value="ALL"
-                            x-model="filters.read">
-                        <label class="form-check-label fs-7" for="readAll">All</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="filterRead" id="readRead" value="READ"
-                            x-model="filters.read">
-                        <label class="form-check-label fs-7" for="readRead">Read</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="filterRead" id="readUnread" value="UNREAD"
-                            x-model="filters.read">
-                        <label class="form-check-label fs-7" for="readUnread">Unread</label>
-                    </div>
+                <div class="input-group input-group-sm mb-3">
+                    <label class="input-group-text">
+                        <i class="bi-bookmark-check"></i>
+                    </label>
+                    <select class="form-select" x-model="filters.read">
+                        <option value="ALL">All</option>
+                        <option value="READ">Read</option>
+                        <option value="UNREAD">UnRead</option>
+                    </select>
                 </div>
-
-                <div class="mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="filterShare" id="shareAll" value="ALL"
-                            x-model="filters.share">
-                        <label class="form-check-label fs-7" for="shareAll">All</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="filterShare" id="shareShared" value="SHARED"
-                            x-model="filters.share">
-                        <label class="form-check-label fs-7" for="shareShared">Shared</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="filterShare" id="shareUnshared"
-                            value="UNSHARED" x-model="filters.share">
-                        <label class="form-check-label fs-7" for="shareUnshared">Unshared</label>
-                    </div>
+                <div class="input-group input-group-sm mb-3">
+                    <label class="input-group-text">
+                        <i class="bi-share"></i>
+                    </label>
+                    <select class="form-select" x-model="filters.share">
+                        <option value="ALL">All</option>
+                        <option value="SHARED">Shared</option>
+                        <option value="UNSHARED">UnShared</option>
+                    </select>
                 </div>
-
-                <div class="mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="filterFavorite" id="favAll" value="ALL"
-                            x-model="filters.favorite">
-                        <label class="form-check-label fs-7" for="favAll">All</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="filterFavorite" id="favFavorited"
-                            value="FAVORITED" x-model="filters.favorite">
-                        <label class="form-check-label fs-7" for="favFavorited">Favorited</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="filterFavorite" id="favUnfavorited"
-                            value="UNFAVORITED" x-model="filters.favorite">
-                        <label class="form-check-label fs-7" for="favUnfavorited">Unfavorited</label>
-                    </div>
+                <div class="input-group input-group-sm mb-3">
+                    <label class="input-group-text">
+                        <i class="bi-heart"></i>
+                    </label>
+                    <select class="form-select" x-model="filters.favorite">
+                        <option value="ALL">All</option>
+                        <option value="FAVORITED">Favorited</option>
+                        <option value="UNFAVORITED">UnFavorited</option>
+                    </select>
                 </div>
-
-                <div class="mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="filterArchive" id="archiveAll" value="ALL"
-                            x-model="filters.archive">
-                        <label class="form-check-label fs-7" for="archiveAll">All</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="filterArchive" id="archiveArchived"
-                            value="ARCHIVED" x-model="filters.archive">
-                        <label class="form-check-label fs-7" for="archiveArchived">Archived</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="filterArchive" id="archiveUnarchived"
-                            value="UNARCHIVED" x-model="filters.archive">
-                        <label class="form-check-label fs-7" for="archiveUnarchived">Unarchived</label>
-                    </div>
+                <div class="input-group input-group-sm mb-3">
+                    <label class="input-group-text">
+                        <i class="bi-archive"></i>
+                    </label>
+                    <select class="form-select" x-model="filters.archive">
+                        <option value="ALL">All</option>
+                        <option value="ARCHIVED">Archived</option>
+                        <option value="UNARCHIVED">UnArchived</option>
+                    </select>
                 </div>
 
                 <div class="mb-3">
@@ -174,24 +143,23 @@
                                                 @click="selectAll = !selectAll; selectedBookmarks = (selectAll ? bookmarks.map(b => b.id) : [])">
                                         </th>
                                         <th class="">
-                                            <select class="form-control fs-8 p-1"
-                                                :disabled="selectedBookmarks.length === 0" x-model="bulkActions.is_read">
+                                            <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
+                                                x-model="bulkActions.is_read">
                                                 <option></option>
                                                 <option value="true">Read</option>
                                                 <option value="false">UnRead</option>
                                             </select>
                                         </th>
                                         <th class="">
-                                            <select class="form-control fs-8 p-1"
-                                                :disabled="selectedBookmarks.length === 0" x-model="bulkActions.is_shared">
+                                            <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
+                                                x-model="bulkActions.is_shared">
                                                 <option></option>
                                                 <option value="true">Share</option>
                                                 <option value="false">UnShare</option>
                                             </select>
                                         </th>
                                         <th class="">
-                                            <select class="form-control fs-8 p-1"
-                                                :disabled="selectedBookmarks.length === 0"
+                                            <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
                                                 x-model="bulkActions.is_favorited">
                                                 <option></option>
                                                 <option value="true">Favorited</option>
