@@ -19,8 +19,24 @@
 @section('content')
     <div class="container-fluid" x-data="data()" x-init="initData({{ json_encode($params) }})">
         <div class="row">
+            <div class="col-12">
+                <!-- Top Bar with Create & Profile -->
+                <div class="d-flex justify-content-end align-items-center gap-3 p-3">
+                    <button
+                        class="btn rounded bg-white text-secondary border border-secondary-subtle rounded-4 d-flex flex-row p-2 px-3"
+                        @click="isCreateModalOpen ? closeCreateModal() : (isCreateModalOpen = true)">
+                        <i class="bi bi-plus-lg"></i>
+                        <span class="ms-2">Create</span>
+                    </button>
+                    <button class="btn btn-primary rounded-circle" @click="isProfileModalOpen = !isProfileModalOpen"
+                        x-text="$store.auth.user().name.charAt(0).toUpperCase()">
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="row">
             <!-- Sidebar Filters -->
-            <div class="col-lg-3 col-xl-2 border-end bg-light min-vh-100 p-3">
+            <div class="col-lg-3 col-xl-2 border-top border-end bg-light min-vh-100 p-3">
                 <div class="mb-3">
                     <input type="text" class="ps-3 form-control form-control-sm rounded-pill"
                         placeholder="Search bookmarks..." x-model="filters.q">
@@ -92,20 +108,6 @@
 
             <!-- Main Content -->
             <div class="col-lg-9 col-xl-10 p-0 g-0">
-                <!-- Top Bar with Create & Profile -->
-                <div class="d-flex justify-content-end align-items-center gap-3 p-3">
-                    <button
-                        class="btn rounded bg-white text-secondary border border-secondary-subtle rounded-4 d-flex flex-row p-2 px-3"
-                        @click="isCreateModalOpen ? closeCreateModal() : (isCreateModalOpen = true)">
-                        <i class="bi bi-plus-lg"></i>
-                        <span class="ms-2">Create</span>
-                    </button>
-                    <button class="btn btn-primary rounded-circle" @click="isProfileModalOpen = !isProfileModalOpen"
-                        x-text="$store.auth.user().name.charAt(0).toUpperCase()">
-                    </button>
-                </div>
-
-                <!-- Bookmark Table -->
                 <template x-if="loading.callBookmarksIndex">
                     <div class="text-center py-4">
                         <div class="spinner-border text-primary"></div>
@@ -173,7 +175,8 @@
                                                                 .read_at ?
                                                                 'bi-bookmark-check-fill' :
                                                                 'bi-bookmark-check')"></i>
-                                                    <span class="text-truncate" x-text="bookmark.read_at ? 'Read' : 'Unread'"></span>
+                                                    <span class="text-truncate"
+                                                        x-text="bookmark.read_at ? 'Read' : 'Unread'"></span>
                                                 </span>
                                             </div>
                                             <div class="col-3">
@@ -187,7 +190,8 @@
                                                             'spinner-border spinner-border-sm' : (bookmark
                                                                 .shared_at ?
                                                                 'bi-share-fill' : 'bi-share')"></i>
-                                                    <span class="text-truncate" x-text="bookmark.shared_at ? 'Shared' : 'Share'"></span>
+                                                    <span class="text-truncate"
+                                                        x-text="bookmark.shared_at ? 'Shared' : 'Share'"></span>
                                                 </span>
                                             </div>
                                             <div class="col-3">
@@ -201,7 +205,8 @@
                                                             'spinner-border spinner-border-sm' : (bookmark
                                                                 .favorited_at ? 'bi-heart-fill' : 'bi-heart'
                                                             )"></i>
-                                                    <span class="text-truncate" x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
+                                                    <span class="text-truncate"
+                                                        x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
                                                 </span>
                                             </div>
                                             <div class="col-3">
@@ -215,7 +220,8 @@
                                                             'spinner-border spinner-border-sm' : (bookmark
                                                                 .archived_at ?
                                                                 'bi-archive-fill' : 'bi-archive')"></i>
-                                                    <span class="text-truncate" x-text="bookmark.archived_at ? 'Archived' : 'Archive'"></span>
+                                                    <span class="text-truncate"
+                                                        x-text="bookmark.archived_at ? 'Archived' : 'Archive'"></span>
                                                 </span>
                                             </div>
                                         </div>
