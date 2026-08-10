@@ -91,7 +91,7 @@
             </div>
 
             <!-- Main Content -->
-            <div class="col-lg-9 col-xl-10 p-3">
+            <div class="col-lg-9 col-xl-10 pt-3">
                 <!-- Top Bar with Create & Profile -->
                 <div class="d-flex justify-content-end align-items-center gap-3 mb-3">
                     <button
@@ -106,7 +106,7 @@
                 </div>
 
                 <!-- Bookmark Table -->
-                <div class="d-flex flex-column gap-4">
+                <div>
                     <template x-if="loading.callBookmarksIndex">
                         <div class="text-center py-4">
                             <div class="spinner-border text-primary"></div>
@@ -120,53 +120,75 @@
                     </template>
                     <template x-if="!loading.callBookmarksIndex && bookmarks.length > 0">
                         <div class="table-responsive">
-                            <table class="table table-borderless table-fixed mb-0 table-sm w-100">
+                            <table class="table table-borderless table-layout-auto mb-0">
                                 <colgroup>
-                                    <col class="width-fit">
-                                    <col style="width: 7%">
-                                    <col style="width: 7%">
-                                    <col style="width: 7%">
-                                    <col style="width: 7%">
-                                    <col style="width: 6%">
-                                    <col style="width: 15%">
-                                    <col>
-                                    <col>
-                                    <col>
-                                    <col>
+                                    <col class="text-nowrap w-1">
+                                    <col class="text-nowrap w-1">
+                                    <col class="text-nowrap w-1">
+                                    <col class="text-nowrap w-1">
+                                    <col class="text-nowrap w-1">
+                                    <col class="text-nowrap w-1">
+                                    <col class="w-100">
                                 </colgroup>
-                                <!-- THEAD -->
-                                <thead class="bg-light border-bottom">
-                                    <!-- Row 1: Labels (clickable) -->
+                                <thead class="table-active">
                                     <tr>
-                                        <th class="">
+                                        <th class="text-center">
+                                            <div x-text="selectedBookmarks.length"></div>
+                                        </th>
+                                        <th colspan="4">
+                                            <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
+                                                x-model="bulkActions.collection">
+                                                <option></option>
+                                                <template x-for="collection in collections"
+                                                    x-show="!loading.callBookmarksCollections">
+                                                    <option :value="collection.name" x-text="collection.name">
+                                                    </option>
+                                                </template>
+                                            </select>
+                                        </th>
+                                        <th>
+                                            <button class="btn btn-outline-secondary w-100 fs-8 p-1 px-2"
+                                                :disabled="selectedBookmarks.length === 0"
+                                                @click="applyUpdateBookmarksCollection()">
+                                                <i
+                                                    :class="loading.callBulkCollection ?
+                                                        'spinner-border spinner-border-sm' : 'bi bi-check2'"></i>
+                                            </button>
+                                        </th>
+                                        <th>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th>
                                             <input class="form-check-input m-0" type="checkbox"
                                                 @click="selectAll = !selectAll; selectedBookmarks = (selectAll ? bookmarks.map(b => b.id) : [])">
                                         </th>
-                                        <th class="">
-                                            <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
-                                                x-model="bulkActions.is_read">
+                                        <th>
+                                            <select class="form-control fs-8 p-1"
+                                                :disabled="selectedBookmarks.length === 0" x-model="bulkActions.is_read">
                                                 <option></option>
                                                 <option value="true">Read</option>
                                                 <option value="false">UnRead</option>
                                             </select>
                                         </th>
-                                        <th class="">
-                                            <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
-                                                x-model="bulkActions.is_shared">
+                                        <th>
+                                            <select class="form-control fs-8 p-1"
+                                                :disabled="selectedBookmarks.length === 0" x-model="bulkActions.is_shared">
                                                 <option></option>
                                                 <option value="true">Share</option>
                                                 <option value="false">UnShare</option>
                                             </select>
                                         </th>
-                                        <th class="">
-                                            <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
+                                        <th>
+                                            <select class="form-control fs-8 p-1"
+                                                :disabled="selectedBookmarks.length === 0"
                                                 x-model="bulkActions.is_favorited">
                                                 <option></option>
                                                 <option value="true">Favorited</option>
                                                 <option value="false">UnFavorited</option>
                                             </select>
                                         </th>
-                                        <th class="">
+                                        <th>
                                             <select class="form-control fs-8 p-1"
                                                 :disabled="selectedBookmarks.length === 0"
                                                 x-model="bulkActions.is_archived">
@@ -185,58 +207,60 @@
                                             </button>
                                         </th>
                                         <th class="text-center">
-                                            <div class="input-group input-group-sm">
-                                                <select class="form-control fs-8 p-1"
-                                                    :disabled="selectedBookmarks.length === 0"
-                                                    x-model="bulkActions.collection">
-                                                    <option></option>
-                                                    <template x-for="collection in collections"
-                                                        x-show="!loading.callBookmarksCollections">
-                                                        <option :value="collection.name" x-text="collection.name">
-                                                        </option>
-                                                    </template>
-                                                </select>
-                                                <button class="btn btn-outline-secondary fs-8 p-1 px-2"
-                                                    :disabled="selectedBookmarks.length === 0"
-                                                    @click="applyUpdateBookmarksCollection()">
-                                                    <i
-                                                        :class="loading.callBulkCollection ?
-                                                            'spinner-border spinner-border-sm' : 'bi bi-check2'"></i>
-                                                </button>
-                                            </div>
                                         </th>
-                                        <th class="text-center"></th>
-                                        <th class="text-center"></th>
-                                        <th class="text-center"></th>
-                                        <th class="text-center"></th>
                                     </tr>
                                 </thead>
                                 <template x-for="(bookmark, index) in bookmarks">
                                     <tbody class="border-top">
-                                        <tr class="text-truncate">
-                                            <td class="text-center align-top w-favicon line-height-1 pb-0 text-truncate">
-                                                <img class="w-favicon pt-1"
+                                        <tr>
+                                            <td>
+                                                <img class="w-favicon"
                                                     :src="bookmark.url.favicon ?? bookmark.url.base_url + '/favicon.ico'"
                                                     onerror="this.style.display='none'">
                                             </td>
-                                            <td class="pb-0 text-truncate" colspan="10">
-                                                <a class="d-block overflow-hidden text-decoration-none text-truncate"
-                                                    target="_blank" :href="bookmark.url.url">
-                                                    <div class="fs-7 text-decoration-none text-truncate d-block text-secondary"
+                                            <td class="text-center" colspan="4">
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text">note</span>
+                                                    <input type="text" class="form-control fs-8 p-1"
+                                                        x-model="noteForms[bookmark.id]">
+                                                    <button class="btn btn-outline-secondary fs-8 p-1 px-2"
+                                                        @click="callUpdateBookmark(bookmark.id, 'note', noteForms[bookmark.id], false)">
+                                                        <i class="bi bi-check2"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td></td>
+                                            <td class="text-break" rowspan="3">
+                                                <a class="text-decoration-none text-break" target="_blank"
+                                                    :href="bookmark.url.url">
+                                                    <div class="fs-8 text-secondary text-break" x-text="bookmark.url.url">
+                                                    </div>
+                                                    <div class="fs-7 text-secondary text-break"
                                                         x-text="bookmark.url.description"
                                                         x-show="bookmark.url.description">
                                                     </div>
-                                                    <div class="fs-8 text-truncate text-secondary"
-                                                        x-text="bookmark.url.url"></div>
-                                                    <div class="fs-6 text-truncate text-primary lh-sm"
-                                                        x-text="bookmark.url.title"></div>
-                                                    <div class="fs-7 text-secondary" x-text="bookmark.note"
-                                                        x-show="bookmark.note"></div>
+                                                    <div class="fs-6 text-primary text-break" x-text="bookmark.url.title">
+                                                    </div>
                                                 </a>
                                             </td>
                                         </tr>
-                                        <tr class="border-0">
-                                            <td class="text-center">
+                                        <tr>
+                                            <td></td>
+                                            <td class="text-center" colspan="4">
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text">collection</span>
+                                                    <input type="text" class="form-control fs-8 p-1"
+                                                        x-model="collectionForms[bookmark.id]">
+                                                    <button class="btn btn-outline-secondary fs-8 p-1 px-2"
+                                                        @click="callUpdateBookmark(bookmark.id, 'collection', collectionForms[bookmark.id], true)">
+                                                        <i class="bi bi-check2"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
                                                 <input class="form-check-input" type="checkbox" :value="bookmark.id"
                                                     x-model="selectedBookmarks">
                                             </td>
@@ -288,21 +312,8 @@
                                                     <span x-text="bookmark.archived_at ? 'Archived' : 'Archive'"></span>
                                                 </span>
                                             </td>
-                                            <td class="text-center"></td>
                                             <td class="text-center">
-                                                <div class="input-group input-group-sm">
-                                                    <input type="text" class="form-control fs-8 p-1"
-                                                        x-model="collectionForms[bookmark.id]">
-                                                    <button class="btn btn-outline-secondary fs-8 p-1 px-2"
-                                                        @click="callUpdateBookmark(bookmark.id, 'collection', collectionForms[bookmark.id], true)">
-                                                        <i class="bi bi-check2"></i>
-                                                    </button>
-                                                </div>
                                             </td>
-                                            <td class="text-center"></td>
-                                            <td class="text-center"></td>
-                                            <td class="text-center"></td>
-                                            <td class="text-center"></td>
                                         </tr>
                                     </tbody>
                                 </template>
@@ -313,7 +324,7 @@
                     <!-- Pagination -->
                     <template
                         x-if="!loading.callBookmarksIndex && paginator && !(paginator.currentPage == 1 && paginator.onLastPage)">
-                        <div class="d-flex justify-content-center gap-1 mt-3">
+                        <div class="d-flex justify-content-center gap-1 my-3">
                             <a x-show="paginator?.currentPage > 2" @click="doFilter(() => filters.page = 1, false, false)"
                                 class="cursor-pointer px-2 text-decoration-none text-primary">
                                 <i class="bi bi-chevron-double-left"></i>
@@ -467,6 +478,7 @@
                 scrollY: null,
                 dropdown: null,
                 paginator: null,
+                noteForms: {},
                 collectionForms: {},
                 createForm: {
                     url: null,
@@ -577,8 +589,10 @@
                             this.bookmarks = resJson.data.bookmarks;
                             this.paginator = resJson.paginator;
                             //
+                            this.noteForms = {};
                             this.collectionForms = {};
                             this.bookmarks.forEach(bookmark => {
+                                this.noteForms[bookmark.id] = bookmark.note;
                                 this.collectionForms[bookmark.id] = bookmark.collection;
                             });
                         } else {

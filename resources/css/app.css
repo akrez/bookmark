@@ -12,12 +12,16 @@
     font-family: "Open Sans", Arial, "sans-serif";
 }
 
+.w-1 {
+  width: 1%;
+}
+
 .line-height-1 {
     line-height: 1;
 }
 
-.table-fixed {
-    table-layout: fixed;
+.table-layout-auto {
+  table-layout: auto;
 }
 
 .width-0 {
