@@ -439,6 +439,8 @@
                 loading: {
                     callBookmarksCollections: false,
                     callBookmarksIndex: false,
+                    callBulkCollection: false,
+                    callBulkUpdate: false,
                     callAuthLogout: false,
                     callNetscapeImport: false,
                     callNetscapeExport: false,
@@ -758,7 +760,12 @@
                         data['is_archived'] = this.bulkActions.is_archived === 'true';
                     }
 
-                    this.callUpdateBookmarks(this.selectedBookmarks, data);
+                    this.loading.callBulkUpdate = true;
+                    try {
+                        await this.callUpdateBookmarks(this.selectedBookmarks, data);
+                    } finally {
+                        this.loading.callBulkUpdate = false;
+                    }
                 },
                 async applyUpdateBookmarksCollection() {
                     if (this.selectedBookmarks.length === 0) {
@@ -769,7 +776,12 @@
                         collection: this.bulkActions.collection
                     };
 
-                    this.callUpdateBookmarks(this.selectedBookmarks, data, true);
+                    this.loading.callBulkCollection = true;
+                    try {
+                        await this.callUpdateBookmarks(this.selectedBookmarks, data, true);
+                    } finally {
+                        this.loading.callBulkCollection = false;
+                    }
                 },
                 async callUpdateBookmarks(ids, data, resetCollection = false) {
                     try {
