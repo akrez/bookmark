@@ -12,6 +12,7 @@
             'api.netscape.export' => route('api.netscape.export'),
             'api.bookmarks.updateAttributes' => route('api.bookmarks.index'),
             'api.bookmarks.store' => route('api.bookmarks.index'),
+            'api.bookmarks.destroy' => route('api.bookmarks.destroy', ['id' => '__ID__']),
         ],
     ];
 @endphp
@@ -295,10 +296,13 @@
                                                 </span>
                                             </div>
                                             <div class="col">
-                                                <div class="btn btn-outline-danger fs-8 p-1 w-100"
-                                                    @click="callUpdateBookmark(bookmark.id, 'collection', collectionForms[bookmark.id], true)">
-                                                    <i class="bi bi-trash"></i>
-                                                </div>
+                                                <button class="btn btn-outline-danger fs-8 p-1 w-100"
+                                                    :disabled="loading.callDestroyBookmark == bookmark.id"
+                                                    @click="callDestroyBookmark(bookmark.id)">
+                                                    <i
+                                                        :class="loading.callDestroyBookmark == bookmark.id ?
+                                                            'spinner-border spinner-border-sm' : 'bi bi-trash'"></i>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -441,6 +445,7 @@
                     callUpdateBookmark: null,
                     callStoreBookmark: false,
                     callUpdateBookmarks: null,
+                    callDestroyBookmark: null,
                 },
                 collections: [],
                 bookmarks: [],
@@ -792,6 +797,37 @@
                     } finally {
                         this.loading.callUpdateBookmarks = false;
                     }
+                },
+                async callDestroyBookmark(bookmarkId) {
+                    this.$store.alert.confirm('Are you sure you want to delete this bookmark?', async (result) => {
+                        if (!result.isConfirmed) {
+                            return;
+                        }
+
+                        try {
+                            if (this.loading.callDestroyBookmark === bookmarkId) return;
+                            this.loading.callDestroyBookmark = bookmarkId;
+
+                            const res = await this.$store.call.callJson(
+                                'DELETE', this.urls['api.bookmarks.destroy'].replace('__ID__',
+                                    bookmarkId), null, null, true
+                            );
+                            const resJson = await res.json();
+
+                            if (res.ok) {
+                                this.$store.alert.success('Bookmark deleted successfully!');
+                                this.doFilter(() => {});
+                            } else {
+                                this.$store.alert.error(resJson.message, resJson.errors);
+                            }
+
+                        } catch (err) {
+                            console.log(err);
+                            this.$store.alert.error('Error');
+                        } finally {
+                            this.loading.callDestroyBookmark = null;
+                        }
+                    });
                 },
                 async callStoreBookmark() {
                     try {
