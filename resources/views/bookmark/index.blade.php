@@ -64,7 +64,7 @@
                 </div>
                 <div class="input-group input-group-sm mb-3">
                     <label class="input-group-text">
-                        <i class="bi-heart"></i>
+                        <i class="bi-star"></i>
                     </label>
                     <select class="form-select" x-model="filters.favorite">
                         <option value="ALL">All</option>
@@ -123,15 +123,19 @@
                     <div class=" ">
                         <template x-for="(bookmark, index) in bookmarks">
                             <div class="d-flex border-top p-2">
-                                <div class="w-favicon d-flex flex-column align-items-center justify-content-center">
-                                    <input class="form-check-input mb-1" type="checkbox" :value="bookmark.id"
+                                <div class="w-favicon d-flex flex-column align-items-center justify-content-between">
+                                    <input class="form-check-input m-1" type="checkbox" :value="bookmark.id"
                                         x-model="selectedBookmarks">
                                     <img class="img-fluid w-100"
                                         :src="bookmark.url.favicon ?? bookmark.url.base_url + '/favicon.ico'"
                                         onerror="this.style.display='none'">
+                                    <div class="text-center text-danger fs-8 p-1 w-100"
+                                        @click="callUpdateBookmark(bookmark.id, 'collection', collectionForms[bookmark.id], true)">
+                                        <i class="bi bi-trash"></i>
+                                    </div>
                                 </div>
                                 <div class="row flex-grow-1 text-break m-0">
-                                    <div class="col-md-7 col-lg-8 col-xl-9 order-md-2">
+                                    <div class="col-md-7 col-lg-8 col-xl-9">
                                         <a class="d-block text-decoration-none text-break pb-2" target="_blank"
                                             :href="bookmark.url.url">
                                             <div class="fs-8 text-secondary text-break" x-text="bookmark.url.url">
@@ -143,7 +147,7 @@
                                             </div>
                                         </a>
                                     </div>
-                                    <div class="col-md-5 col-lg-4 col-xl-3 order-md-1">
+                                    <div class="col-md-5 col-lg-4 col-xl-3">
                                         <div class="input-group input-group-sm flex-nowrap pb-2">
                                             <span class="input-group-text fs-8">note</span>
                                             <input type="text" class="form-control fs-8 p-1"
@@ -162,10 +166,10 @@
                                                 <i class="bi bi-check2"></i>
                                             </button>
                                         </div>
-                                        <div class="row g-0">
-                                            <div class="col-3">
+                                        <div class="row g-0 gap-1">
+                                            <div class="col">
                                                 <span
-                                                    class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8"
+                                                    class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
                                                     :class="{ 'fw-bold text-success': bookmark.read_at }"
                                                     @click="callUpdateBookmark(bookmark.id, 'is_read', bookmark.read_at ? false : true)">
                                                     <i
@@ -179,9 +183,9 @@
                                                         x-text="bookmark.read_at ? 'Read' : 'Unread'"></span>
                                                 </span>
                                             </div>
-                                            <div class="col-3">
+                                            <div class="col">
                                                 <span
-                                                    class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8"
+                                                    class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
                                                     :class="{ 'fw-bold text-primary': bookmark.shared_at }"
                                                     @click="callUpdateBookmark(bookmark.id, 'is_shared', bookmark.shared_at ? false : true)">
                                                     <i
@@ -194,25 +198,25 @@
                                                         x-text="bookmark.shared_at ? 'Shared' : 'Share'"></span>
                                                 </span>
                                             </div>
-                                            <div class="col-3">
+                                            <div class="col">
                                                 <span
-                                                    class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8"
-                                                    :class="{ 'fw-bold text-danger': bookmark.favorited_at }"
+                                                    class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
+                                                    :class="{ 'fw-bold text-warning': bookmark.favorited_at }"
                                                     @click="callUpdateBookmark(bookmark.id, 'is_favorited', bookmark.favorited_at ? false : true)">
                                                     <i
                                                         :class="loading.callUpdateBookmark == bookmark.id +
                                                             '-is_favorited' ?
                                                             'spinner-border spinner-border-sm' : (bookmark
-                                                                .favorited_at ? 'bi-heart-fill' : 'bi-heart'
+                                                                .favorited_at ? 'bi-star-fill' : 'bi-star'
                                                             )"></i>
                                                     <span class="text-truncate"
                                                         x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
                                                 </span>
                                             </div>
-                                            <div class="col-3">
+                                            <div class="col">
                                                 <span
-                                                    class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8"
-                                                    :class="{ 'fw-bold text-warning': bookmark.archived_at }"
+                                                    class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
+                                                    :class="{ 'fw-bold text-dark': bookmark.archived_at }"
                                                     @click="callUpdateBookmark(bookmark.id, 'is_archived', bookmark.archived_at ? false : true)">
                                                     <i
                                                         :class="loading.callUpdateBookmark == bookmark.id +
