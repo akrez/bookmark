@@ -778,7 +778,7 @@
 
                     this.loading.callBulkCollection = true;
                     try {
-                        await this.callUpdateBookmarks(this.selectedBookmarks, data, true);
+                        await this.callUpdateBookmarks(this.selectedBookmarks, data, false);
                     } finally {
                         this.loading.callBulkCollection = false;
                     }
@@ -798,7 +798,24 @@
 
                         if (res.ok) {
                             this.$store.alert.success('Bookmark updated successfully!');
-                            this.doFilter(() => {}, resetCollection, false);
+
+                            const raw = resJson.data?.bookamrks;
+                            const updated = resJson.data?.bookamrks || [];
+                            this.bookmarks.forEach(target => {
+                                const match = updated.find(b => b.id === target.id);
+                                if (match) {
+                                    target.collection = match.collection;
+                                    target.note = match.note;
+                                    target.read_at = match.read_at;
+                                    target.shared_at = match.shared_at;
+                                    target.favorited_at = match.favorited_at;
+                                    target.archived_at = match.archived_at;
+                                }
+                            });
+
+                            if (resetCollection) {
+                                this.doFilter(() => {}, true, false);
+                            }
                         } else {
                             this.$store.alert.error(resJson.message, resJson.errors);
                         }
