@@ -64,6 +64,10 @@ document.addEventListener("alpine:init", () => {
         },
     });
     Alpine.store("alert", {
+        trans: {
+            Yes: "Yes",
+            No: "No",
+        },
         error(message, errors = {}) {
             const items = Object.entries(errors || {}).flatMap(
                 ([field, messages]) => {
@@ -96,7 +100,7 @@ document.addEventListener("alpine:init", () => {
             });
         },
         confirm(text, func) {
-            that = this;
+            let that = this;
             Swal.fire({
                 text: text,
                 icon: "warning",
