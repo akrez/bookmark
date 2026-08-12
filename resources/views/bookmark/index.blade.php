@@ -223,7 +223,7 @@
                                             <input type="text" class="form-control fs-8 p-1"
                                                 x-model="noteForms[bookmark.id]">
                                             <button class="btn btn-outline-secondary fs-8 p-1 px-2"
-                                                @click="callUpdateBookmarks([{id: bookmark.id,'note': noteForms[bookmark.id]}], false)">
+                                                @click="callUpdateBookmarks([{id: bookmark.id, 'note': noteForms[bookmark.id]}], false)">
                                                 <i
                                                     :class="callxHas('note', bookmark.id) ?
                                                         'spinner-border spinner-border-sm' :
@@ -235,7 +235,7 @@
                                             <input type="text" class="form-control fs-8 p-1"
                                                 x-model="collectionForms[bookmark.id]">
                                             <button class="btn btn-outline-secondary fs-8 p-1 px-2"
-                                                @click="callUpdateBookmarks([{id: bookmark.id,'collection': collectionForms[bookmark.id]}], true)">
+                                                @click="callUpdateBookmarks([{id: bookmark.id, 'collection': collectionForms[bookmark.id]}], true)">
                                                 <i
                                                     :class="callxHas('collection', bookmark.id) ?
                                                         'spinner-border spinner-border-sm' :
@@ -247,7 +247,7 @@
                                                 <span
                                                     class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
                                                     :class="{ 'fw-bold text-success': bookmark.read_at }"
-                                                    @click="callUpdateBookmarks([{id: bookmark.id,'is_read': bookmark.read_at ? false : true}])">
+                                                    @click="callUpdateBookmarks([{id: bookmark.id, 'is_read': bookmark.read_at ? false : true}])">
                                                     <i
                                                         :class="callxHas('is_read', bookmark.id) ?
                                                             'spinner-border spinner-border-sm' : (bookmark
@@ -262,7 +262,7 @@
                                                 <span
                                                     class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
                                                     :class="{ 'fw-bold text-primary': bookmark.shared_at }"
-                                                    @click="callUpdateBookmarks([{id: bookmark.id,'is_shared': bookmark.shared_at ? false : true}])">
+                                                    @click="callUpdateBookmarks([{id: bookmark.id, 'is_shared': bookmark.shared_at ? false : true}])">
                                                     <i
                                                         :class="callxHas('shared_at', bookmark.id) ?
                                                             'spinner-border spinner-border-sm' : (bookmark
@@ -276,7 +276,7 @@
                                                 <span
                                                     class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
                                                     :class="{ 'fw-bold text-warning': bookmark.favorited_at }"
-                                                    @click="callUpdateBookmarks([{id: bookmark.id,'is_favorited': bookmark.favorited_at ? false : true}])">
+                                                    @click="callUpdateBookmarks([{id: bookmark.id, 'is_favorited': bookmark.favorited_at ? false : true}])">
                                                     <i
                                                         :class="callxHas('favorited_at', bookmark.id) ?
                                                             'spinner-border spinner-border-sm' : (bookmark
@@ -290,7 +290,7 @@
                                                 <span
                                                     class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
                                                     :class="{ 'fw-bold text-dark': bookmark.archived_at }"
-                                                    @click="callUpdateBookmarks([{id: bookmark.id,'is_archived': bookmark.archived_at ? false : true}])">
+                                                    @click="callUpdateBookmarks([{id: bookmark.id, 'is_archived': bookmark.archived_at ? false : true}])">
                                                     <i
                                                         :class="callxHas('archived_at', bookmark.id) ?
                                                             'spinner-border spinner-border-sm' :
