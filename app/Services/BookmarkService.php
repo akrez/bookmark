@@ -100,7 +100,7 @@ class BookmarkService extends Service
         $query = $query->orderByRaw('`favorited_at` IS NULL, `favorited_at` DESC, `created_at` DESC, `id` ASC');
 
         $bookmarks = $paginated ?
-            $query->paginate(page: $validated['page'], perPage: 20) :
+            $query->paginate(page: $validated['page'], perPage: 25) :
             $query->get();
 
         return ApiResponse::make(200)->data([
