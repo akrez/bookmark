@@ -116,7 +116,7 @@ class BookmarkService extends Service
                 'integer',
                 Rule::exists('urls', 'id'),
                 Rule::unique('bookmarks', 'url_id')
-                    ->where('user_id', $userId)
+                    ->where('user_id', $userId),
             ],
             'collection' => ['nullable', 'string', 'max:512'],
             'note' => ['nullable', 'string'],
@@ -196,7 +196,8 @@ class BookmarkService extends Service
 
     public function updateAttributes(int $userId, array $input)
     {
-        $ids = collect($input['ids'] ?? [])
+        $ids = collect($input['bookmarks'] ?? [])
+            ->pluck('id')
             ->map(fn ($id) => (int) trim((string) $id))
             ->filter()
             ->unique()
@@ -210,38 +211,39 @@ class BookmarkService extends Service
         $bookmarkIds = $bookmarks->keys();
 
         $validator = Validator::make($input, [
-            'ids' => ['required', 'array'],
-            'ids.*' => ['required', 'integer', Rule::in($bookmarkIds)],
-            'collection' => ['sometimes', 'nullable', 'string', 'max:512'],
-            'is_favorited' => ['sometimes', 'nullable', 'boolean'],
-            'is_read' => ['sometimes', 'nullable', 'boolean'],
-            'is_archived' => ['sometimes', 'nullable', 'boolean'],
-            'is_shared' => ['sometimes', 'nullable', 'boolean'],
-            'note' => ['sometimes', 'string'],
+            'bookmarks' => ['required', 'array'],
+            'bookmarks.*.id' => ['required', 'integer', Rule::in($bookmarkIds)],
+            'bookmarks.*.collection' => ['sometimes', 'nullable', 'string', 'max:512'],
+            'bookmarks.*.is_favorited' => ['sometimes', 'nullable', 'boolean'],
+            'bookmarks.*.is_read' => ['sometimes', 'nullable', 'boolean'],
+            'bookmarks.*.is_archived' => ['sometimes', 'nullable', 'boolean'],
+            'bookmarks.*.is_shared' => ['sometimes', 'nullable', 'boolean'],
+            'bookmarks.*.note' => ['sometimes', 'string'],
         ]);
         if ($validator->fails()) {
             return ApiResponse::makeFromValidator($validator);
         }
         $validated = $validator->validated();
 
-        $updateData = [];
-        foreach ($validated as $validatedAttributeName => $validatedAttributeValue) {
-            if ($validatedAttributeName === 'collection') {
-                $updateData['collection'] = $validatedAttributeValue;
-            } elseif ($validatedAttributeName === 'is_read') {
-                $updateData['read_at'] = $this->booleanToDate($validatedAttributeValue);
-            } elseif ($validatedAttributeName === 'is_archived') {
-                $updateData['archived_at'] = $this->booleanToDate($validatedAttributeValue);
-            } elseif ($validatedAttributeName === 'is_shared') {
-                $updateData['shared_at'] = $this->booleanToDate($validatedAttributeValue);
-            } elseif ($validatedAttributeName === 'is_favorited') {
-                $updateData['favorited_at'] = $this->booleanToDate($validatedAttributeValue);
-            } elseif ($validatedAttributeName === 'note') {
-                $updateData['note'] = $validatedAttributeValue;
+        foreach ($validated['bookmarks'] as $validated) {
+            $updateData = [];
+            foreach ($validated as $validatedAttributeName => $validatedAttributeValue) {
+                if ($validatedAttributeName === 'collection') {
+                    $updateData['collection'] = $validatedAttributeValue;
+                } elseif ($validatedAttributeName === 'is_read') {
+                    $updateData['read_at'] = $this->booleanToDate($validatedAttributeValue);
+                } elseif ($validatedAttributeName === 'is_archived') {
+                    $updateData['archived_at'] = $this->booleanToDate($validatedAttributeValue);
+                } elseif ($validatedAttributeName === 'is_shared') {
+                    $updateData['shared_at'] = $this->booleanToDate($validatedAttributeValue);
+                } elseif ($validatedAttributeName === 'is_favorited') {
+                    $updateData['favorited_at'] = $this->booleanToDate($validatedAttributeValue);
+                } elseif ($validatedAttributeName === 'note') {
+                    $updateData['note'] = $validatedAttributeValue;
+                }
             }
-        }
-
-        foreach ($validated['ids'] as $id) {
+            
+            $id = $validated['id'];
             if ($updateData && ! $bookmarks[$id]->update($updateData)) {
                 return ApiResponse::make(500);
             }

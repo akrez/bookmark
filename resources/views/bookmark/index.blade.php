@@ -56,8 +56,7 @@
                             <button class="btn btn-outline-secondary fs-8 p-1 px-2"
                                 :disabled="selectedBookmarks.length === 0" @click="applyUpdateBookmarksCollection()">
                                 <i
-                                    :class="loading.callBulkCollection ?
-                                        'spinner-border spinner-border-sm' : 'bi bi-check2'"></i>
+                                    :class="callxHas('collection') ? 'spinner-border spinner-border-sm' : 'bi bi-check2'"></i>
                             </button>
                         </div>
                         <div class="row g-0 gap-1 flex-grow-1 w-100">
@@ -98,8 +97,12 @@
                                     :disabled="selectedBookmarks.length === 0 || !hasBulkActions()"
                                     @click="applyUpdateBookmarks()">
                                     <i
-                                        :class="loading.callBulkUpdate ? 'spinner-border spinner-border-sm' :
-                                            'bi bi-check2'"></i>
+                                        :class="(
+                                            callxHas('is_read') ||
+                                            callxHas('is_shared') ||
+                                            callxHas('is_favorited') ||
+                                            callxHas('is_archived')
+                                        ) ? 'spinner-border spinner-border-sm' : 'bi bi-check2'"></i>
                                 </button>
                             </div>
                         </div>
@@ -220,8 +223,11 @@
                                             <input type="text" class="form-control fs-8 p-1"
                                                 x-model="noteForms[bookmark.id]">
                                             <button class="btn btn-outline-secondary fs-8 p-1 px-2"
-                                                @click="callUpdateBookmarks([bookmark.id], {'note': noteForms[bookmark.id]}, false)">
-                                                <i class="bi bi-check2"></i>
+                                                @click="callUpdateBookmarks([{id: bookmark.id,'note': noteForms[bookmark.id]}], false)">
+                                                <i
+                                                    :class="callxHas('note', bookmark.id) ?
+                                                        'spinner-border spinner-border-sm' :
+                                                        'bi bi-check2'"></i>
                                             </button>
                                         </div>
                                         <div class="input-group input-group-sm flex-nowrap pb-2">
@@ -229,8 +235,11 @@
                                             <input type="text" class="form-control fs-8 p-1"
                                                 x-model="collectionForms[bookmark.id]">
                                             <button class="btn btn-outline-secondary fs-8 p-1 px-2"
-                                                @click="callUpdateBookmarks([bookmark.id], {'collection': collectionForms[bookmark.id]}, true)">
-                                                <i class="bi bi-check2"></i>
+                                                @click="callUpdateBookmarks([{id: bookmark.id,'collection': collectionForms[bookmark.id]}], true)">
+                                                <i
+                                                    :class="callxHas('collection', bookmark.id) ?
+                                                        'spinner-border spinner-border-sm' :
+                                                        'bi bi-check2'"></i>
                                             </button>
                                         </div>
                                         <div class="row g-0 gap-1">
@@ -238,9 +247,9 @@
                                                 <span
                                                     class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
                                                     :class="{ 'fw-bold text-success': bookmark.read_at }"
-                                                    @click="callUpdateBookmarks([bookmark.id], {'is_read': bookmark.read_at ? false : true})">
+                                                    @click="callUpdateBookmarks([{id: bookmark.id,'is_read': bookmark.read_at ? false : true}])">
                                                     <i
-                                                        :class="loading.callx?.[bookmark.id]?.is_read ?
+                                                        :class="callxHas('is_read', bookmark.id) ?
                                                             'spinner-border spinner-border-sm' : (bookmark
                                                                 .read_at ?
                                                                 'bi-bookmark-check-fill' :
@@ -253,9 +262,9 @@
                                                 <span
                                                     class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
                                                     :class="{ 'fw-bold text-primary': bookmark.shared_at }"
-                                                    @click="callUpdateBookmarks([bookmark.id], {'is_shared': bookmark.shared_at ? false : true})">
+                                                    @click="callUpdateBookmarks([{id: bookmark.id,'is_shared': bookmark.shared_at ? false : true}])">
                                                     <i
-                                                        :class="loading.callx?.[bookmark.id]?.is_shared ?
+                                                        :class="callxHas('shared_at', bookmark.id) ?
                                                             'spinner-border spinner-border-sm' : (bookmark
                                                                 .shared_at ?
                                                                 'bi-share-fill' : 'bi-share')"></i>
@@ -267,9 +276,9 @@
                                                 <span
                                                     class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
                                                     :class="{ 'fw-bold text-warning': bookmark.favorited_at }"
-                                                    @click="callUpdateBookmarks([bookmark.id], {'is_favorited': bookmark.favorited_at ? false : true})">
+                                                    @click="callUpdateBookmarks([{id: bookmark.id,'is_favorited': bookmark.favorited_at ? false : true}])">
                                                     <i
-                                                        :class="loading.callx?.[bookmark.id]?.is_favorited ?
+                                                        :class="callxHas('favorited_at', bookmark.id) ?
                                                             'spinner-border spinner-border-sm' : (bookmark
                                                                 .favorited_at ? 'bi-star-fill' : 'bi-star'
                                                             )"></i>
@@ -281,12 +290,11 @@
                                                 <span
                                                     class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
                                                     :class="{ 'fw-bold text-dark': bookmark.archived_at }"
-                                                    @click="callUpdateBookmarks([bookmark.id], {'is_archived': bookmark.archived_at ? false : true})">
+                                                    @click="callUpdateBookmarks([{id: bookmark.id,'is_archived': bookmark.archived_at ? false : true}])">
                                                     <i
-                                                        :class="loading.callx?.[bookmark.id]?.is_archived ?
-                                                            'spinner-border spinner-border-sm' : (bookmark
-                                                                .archived_at ?
-                                                                'bi-archive-fill' : 'bi-archive')"></i>
+                                                        :class="callxHas('archived_at', bookmark.id) ?
+                                                            'spinner-border spinner-border-sm' :
+                                                            (bookmark.archived_at ? 'bi-archive-fill' : 'bi-archive')"></i>
                                                     <span class="text-truncate"
                                                         x-text="bookmark.archived_at ? 'Archived' : 'Archive'"></span>
                                                 </span>
@@ -436,13 +444,19 @@
                     callBookmarksCollections: false,
                     callBookmarksIndex: false,
                     callBulkCollection: false,
-                    callBulkUpdate: false,
                     callAuthLogout: false,
                     callNetscapeImport: false,
                     callNetscapeExport: false,
                     callStoreBookmark: false,
                     callDestroyBookmark: null,
-                    callx: null,
+                    callx: {
+                        note: [],
+                        collection: [],
+                        is_read: [],
+                        is_shared: [],
+                        is_favorited: [],
+                        is_archived: [],
+                    },
                 },
                 collections: [],
                 bookmarks: [],
@@ -738,38 +752,51 @@
                         data['is_archived'] = this.bulkActions.is_archived === 'true';
                     }
 
-                    this.loading.callBulkUpdate = true;
-                    try {
-                        await this.callUpdateBookmarks(this.selectedBookmarks, data);
-                    } finally {
-                        this.loading.callBulkUpdate = false;
-                    }
+                    let bookmarks = [];
+                    this.selectedBookmarks.forEach(id => {
+                        bookmarks.push({
+                            id: id,
+                            ...data
+                        });
+                    });
+
+                    await this.callUpdateBookmarks(bookmarks);
                 },
                 async applyUpdateBookmarksCollection() {
                     if (this.selectedBookmarks.length === 0) {
                         return;
                     }
 
-                    const data = {
-                        collection: this.bulkActions.collection
-                    };
+                    let bookmarks = [];
+                    this.selectedBookmarks.forEach(id => {
+                        bookmarks.push({
+                            id: id,
+                            collection: this.bulkActions.collection
+                        });
+                    });
 
-                    this.loading.callBulkCollection = true;
-                    try {
-                        await this.callUpdateBookmarks(this.selectedBookmarks, data, false);
-                    } finally {
-                        this.loading.callBulkCollection = false;
-                    }
+                    await this.callUpdateBookmarks(bookmarks, false);
                 },
-                async callUpdateBookmarks(ids, data, resetCollection = false) {
+                callxHas(attributeKey, bookmarkId = null) {
+                    this.loading.callx[attributeKey] ??= [];
+                    if (bookmarkId === null) {
+                        return this.loading.callx[attributeKey].length > 0;
+                    }
+                    return this.loading.callx[attributeKey].includes(bookmarkId);
+                },
+                async callUpdateBookmarks(bookmarks, resetCollection = false) {
                     try {
-                        if (this.loading.callUpdateBookmarks) return;
-                        this.loading.callUpdateBookmarks = true;
+
+                        bookmarks.forEach(bookmark => {
+                            Object.keys(bookmark).forEach(attributeKey => {
+                                this.loading.callx[attributeKey] ??= [];
+                                this.loading.callx[attributeKey].push(bookmark.id);
+                            });
+                        });
 
                         const res = await this.$store.call.callJson(
                             'PATCH', this.urls['api.bookmarks.updateAttributes'], null, {
-                                ids: ids,
-                                ...data
+                                bookmarks: bookmarks
                             }, true
                         );
                         const resJson = await res.json();
@@ -783,7 +810,10 @@
                             if (updated.length) {
                                 this.bookmarks = this.bookmarks.map(b => {
                                     const match = updated.find(u => u.id === b.id);
-                                    return match ? { ...b, ...match } : b;
+                                    return match ? {
+                                        ...b,
+                                        ...match
+                                    } : b;
                                 });
                             }
 
@@ -798,7 +828,13 @@
                         console.log(err);
                         this.$store.alert.error('Error');
                     } finally {
-                        this.loading.callUpdateBookmarks = false;
+                        bookmarks.forEach(bookmark => {
+                            Object.keys(bookmark).forEach(attributeKey => {
+                                this.loading.callx[attributeKey] = this.loading.callx[attributeKey]
+                                    .filter(item =>
+                                        item !== bookmark.id);
+                            });
+                        });
                     }
                 },
                 async callDestroyBookmark(bookmarkId) {
