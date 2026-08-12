@@ -21,89 +21,105 @@
     <div class="container-fluid" x-data="data()" x-init="initData({{ json_encode($params) }})">
         <div class="row border-bottom bg-light sticky-top">
             <div class="col-lg-3 col-xl-2 border-end p-3">
-                <div class="d-flex justify-content-end align-items-center gap-3">
-                    <button class="btn btn-primary rounded-circle" @click="isProfileModalOpen = !isProfileModalOpen"
-                        x-text="$store.auth.user().name.charAt(0).toUpperCase()">
-                    </button>
-                    <button
-                        class="btn rounded bg-white text-secondary border border-secondary-subtle rounded-4 d-flex flex-row p-2 px-3 flex-grow-1"
-                        @click="isCreateModalOpen ? closeCreateModal() : (isCreateModalOpen = true)">
-                        <i class="bi bi-plus-lg"></i>
-                        <span class="ms-2">Create</span>
-                    </button>
-                </div>
-            </div>
-            <div class="col-lg-9 col-xl-10 p-2 g-0 d-flex">
-                <div class="w-favicon d-flex flex-column align-items-center justify-content-between">
-                    <p x-text="selectedBookmarks.length > 0 ? selectedBookmarks.length : '&nbsp;'"></p>
-                    <input class="form-check-input m-1" type="checkbox"
-                        @click="selectAll = !selectAll; selectedBookmarks = (selectAll ? bookmarks.map(b => b.id) : [])">
-                </div>
-                <div class="row flex-grow-1 text-break m-0">
-                    <div class="col-md-7 col-lg-8">
-                    </div>
-                    <div class="col-md-5 col-lg-4 d-flex align-items-end flex-column">
-                        <div class="input-group input-group-sm flex-nowrap pb-2">
-                            <span class="input-group-text fs-8">collection</span>
-                            <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
-                                x-model="bulkActions.collection">
-                                <option></option>
-                                <template x-for="collection in collections" x-show="!loading.callBookmarksCollections">
-                                    <option :value="collection.name" x-text="collection.name">
-                                    </option>
-                                </template>
-                            </select>
-                            <button class="btn btn-outline-secondary fs-8 p-1 px-2"
-                                :disabled="selectedBookmarks.length === 0" @click="applyUpdateBookmarksCollection()">
-                                <i
-                                    :class="callxHas('collection') ? 'spinner-border spinner-border-sm' : 'bi bi-check2'"></i>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-end align-items-center gap-3">
+                            <button class="btn btn-primary rounded-circle" @click="isProfileModalOpen = !isProfileModalOpen"
+                                x-text="$store.auth.user().name.charAt(0).toUpperCase()">
+                            </button>
+                            <button
+                                class="btn rounded bg-white text-secondary border border-secondary-subtle rounded-4 d-flex flex-row p-2 px-3 flex-grow-1"
+                                @click="isCreateModalOpen ? closeCreateModal() : (isCreateModalOpen = true)">
+                                <i class="bi bi-plus-lg"></i>
+                                <span class="ms-2">Create</span>
                             </button>
                         </div>
-                        <div class="row g-0 gap-1 flex-grow-1 w-100">
-                            <div class="col">
-                                <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
-                                    x-model="bulkActions.is_read">
-                                    <option></option>
-                                    <option value="true">Read</option>
-                                    <option value="false">UnRead</option>
-                                </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-9 col-xl-10 d-flex flex-column justify-content-end flex-fill">
+                <div class="row">
+                    <div class="col-12 d-flex gap-2">
+                        <div class="w-favicon d-flex flex-column align-items-center justify-content-center pb-2">
+                            <div class="position-relative d-inline-block cursor-pointer user-select-none text-secondary"
+                                @click="selectAll = !selectAll; selectedBookmarks = (selectAll ? bookmarks.map(b => b.id) : [])">
+                                <i class="bi bi-app fs-5"></i>
+                                <span class="position-absolute top-50 start-50 translate-middle fs-8"
+                                    x-text="selectedBookmarks.length > 0 ? selectedBookmarks.length : '&nbsp;'">
+                                </span>
                             </div>
-                            <div class="col">
-                                <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
-                                    x-model="bulkActions.is_shared">
-                                    <option></option>
-                                    <option value="true">Share</option>
-                                    <option value="false">UnShare</option>
-                                </select>
+                        </div>
+                        <div class="row flex-grow-1 text-break">
+                            <div class="col-sm-4 align-items-end d-flex">
                             </div>
-                            <div class="col">
-                                <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
-                                    x-model="bulkActions.is_favorited">
-                                    <option></option>
-                                    <option value="true">Favorited</option>
-                                    <option value="false">UnFavorited</option>
-                                </select>
+                            <div class="col-sm-4 align-items-end d-flex">
+                                <div class="input-group input-group-sm flex-nowrap pb-2">
+                                    <span class="input-group-text fs-8">collection</span>
+                                    <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
+                                        x-model="bulkActions.collection">
+                                        <option></option>
+                                        <template x-for="collection in collections"
+                                            x-show="!loading.callBookmarksCollections">
+                                            <option :value="collection.name" x-text="collection.name">
+                                            </option>
+                                        </template>
+                                    </select>
+                                    <button class="btn btn-outline-secondary fs-8 p-1 px-2"
+                                        :disabled="selectedBookmarks.length === 0"
+                                        @click="applyUpdateBookmarksCollection()">
+                                        <i
+                                            :class="callxHas('collection') ? 'spinner-border spinner-border-sm' : 'bi bi-check2'"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="col">
-                                <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
-                                    x-model="bulkActions.is_archived">
-                                    <option></option>
-                                    <option value="true">Archive</option>
-                                    <option value="false">UnArchive</option>
-                                </select>
-                            </div>
-                            <div class="col">
-                                <button class="btn btn-outline-secondary w-100 fs-8 p-1 px-2"
-                                    :disabled="selectedBookmarks.length === 0 || !hasBulkActions()"
-                                    @click="applyUpdateBookmarks()">
-                                    <i
-                                        :class="(
-                                            callxHas('is_read') ||
-                                            callxHas('is_shared') ||
-                                            callxHas('is_favorited') ||
-                                            callxHas('is_archived')
-                                        ) ? 'spinner-border spinner-border-sm' : 'bi bi-check2'"></i>
-                                </button>
+                            <div class="col-sm-4 align-items-end d-flex">
+                                <div class="row g-0 gap-1 flex-grow-1 w-100 pb-2">
+                                    <div class="col">
+                                        <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
+                                            x-model="bulkActions.is_read">
+                                            <option></option>
+                                            <option value="true">Read</option>
+                                            <option value="false">UnRead</option>
+                                        </select>
+                                    </div>
+                                    <div class="col">
+                                        <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
+                                            x-model="bulkActions.is_shared">
+                                            <option></option>
+                                            <option value="true">Share</option>
+                                            <option value="false">UnShare</option>
+                                        </select>
+                                    </div>
+                                    <div class="col">
+                                        <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
+                                            x-model="bulkActions.is_favorited">
+                                            <option></option>
+                                            <option value="true">Favorited</option>
+                                            <option value="false">UnFavorited</option>
+                                        </select>
+                                    </div>
+                                    <div class="col">
+                                        <select class="form-control fs-8 p-1" :disabled="selectedBookmarks.length === 0"
+                                            x-model="bulkActions.is_archived">
+                                            <option></option>
+                                            <option value="true">Archive</option>
+                                            <option value="false">UnArchive</option>
+                                        </select>
+                                    </div>
+                                    <div class="col">
+                                        <button class="btn btn-outline-secondary w-100 fs-8 p-1 px-2"
+                                            :disabled="selectedBookmarks.length === 0 || !hasBulkActions()"
+                                            @click="applyUpdateBookmarks()">
+                                            <i
+                                                :class="(
+                                                    callxHas('is_read') ||
+                                                    callxHas('is_shared') ||
+                                                    callxHas('is_favorited') ||
+                                                    callxHas('is_archived')
+                                                ) ? 'spinner-border spinner-border-sm' : 'bi bi-check2'"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -181,31 +197,20 @@
             </div>
 
             <!-- Main Content -->
-            <div class="col-lg-9 col-xl-10 p-0 g-0">
-                <template x-if="loading.callBookmarksIndex">
-                    <div class="text-center py-4">
-                        <div class="spinner-border text-primary"></div>
-                    </div>
-                </template>
-                <template x-if="!loading.callBookmarksIndex && (bookmarks.length < 1)">
-                    <div class="text-center py-4 text-secondary fs-6">
-                        <i class="bi bi-bookmarks fs-1 d-block mb-2"></i>
-                        Your search did not match any documents.
-                    </div>
-                </template>
+            <div class="col-lg-9 col-xl-10 d-flex flex-column flex-fill">
                 <template x-if="!loading.callBookmarksIndex && bookmarks.length > 0">
-                    <div class="">
+                    <div class="row">
                         <template x-for="(bookmark, index) in bookmarks">
-                            <div class="d-flex border-bottom p-2">
-                                <div class="w-favicon d-flex flex-column align-items-center justify-content-between">
+                            <div class="col-12 d-flex border-bottom gap-2 pt-2">
+                                <div class="w-favicon d-flex flex-column align-items-center justify-content-center pb-2">
                                     <img class="img-fluid w-100"
                                         :src="bookmark.url.favicon ?? bookmark.url.base_url + '/favicon.ico'"
                                         onerror="this.style.display='none'">
-                                    <input class="form-check-input m-1" type="checkbox" :value="bookmark.id"
+                                    <input class="form-check-input m-2" type="checkbox" :value="bookmark.id"
                                         x-model="selectedBookmarks">
                                 </div>
-                                <div class="row flex-grow-1 text-break m-0">
-                                    <div class="col-md-7 col-lg-8">
+                                <div class="row flex-grow-1 text-break">
+                                    <div class="col-12">
                                         <a class="d-block text-decoration-none text-break pb-2" target="_blank"
                                             :href="bookmark.url.url">
                                             <div class="fs-8 text-secondary text-break" x-text="bookmark.url.url">
@@ -217,102 +222,131 @@
                                             </div>
                                         </a>
                                     </div>
-                                    <div class="col-md-5 col-lg-4">
-                                        <div class="input-group input-group-sm flex-nowrap pb-2">
-                                            <span class="input-group-text fs-8">note</span>
-                                            <input type="text" class="form-control fs-8 p-1"
-                                                x-model="noteForms[bookmark.id]">
-                                            <button class="btn btn-outline-secondary fs-8 p-1 px-2"
-                                                @click="callUpdateBookmarks([{id: bookmark.id, 'note': noteForms[bookmark.id]}], false)">
-                                                <i
-                                                    :class="callxHas('note', bookmark.id) ?
-                                                        'spinner-border spinner-border-sm' :
-                                                        'bi bi-check2'"></i>
-                                            </button>
-                                        </div>
-                                        <div class="input-group input-group-sm flex-nowrap pb-2">
-                                            <span class="input-group-text fs-8">collection</span>
-                                            <input type="text" class="form-control fs-8 p-1"
-                                                x-model="collectionForms[bookmark.id]">
-                                            <button class="btn btn-outline-secondary fs-8 p-1 px-2"
-                                                @click="callUpdateBookmarks([{id: bookmark.id, 'collection': collectionForms[bookmark.id]}], true)">
-                                                <i
-                                                    :class="callxHas('collection', bookmark.id) ?
-                                                        'spinner-border spinner-border-sm' :
-                                                        'bi bi-check2'"></i>
-                                            </button>
-                                        </div>
-                                        <div class="row g-0 gap-1">
-                                            <div class="col">
-                                                <span
-                                                    class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
-                                                    :class="{ 'fw-bold text-success': bookmark.read_at }"
-                                                    @click="callUpdateBookmarks([{id: bookmark.id, 'is_read': bookmark.read_at ? false : true}])">
-                                                    <i
-                                                        :class="callxHas('is_read', bookmark.id) ?
-                                                            'spinner-border spinner-border-sm' : (bookmark
-                                                                .read_at ?
-                                                                'bi-bookmark-check-fill' :
-                                                                'bi-bookmark-check')"></i>
-                                                    <span class="text-truncate"
-                                                        x-text="bookmark.read_at ? 'Read' : 'Unread'"></span>
-                                                </span>
+                                    <div class="col-12">
+                                        <div class="row">
+                                            <div class="col-sm-4 align-items-end d-flex">
+                                                <div class="input-group input-group-sm flex-nowrap pb-2">
+                                                    <span class="input-group-text fs-8">note</span>
+                                                    <input type="text" class="form-control fs-8 p-1"
+                                                        x-model="noteForms[bookmark.id]">
+                                                    <button class="btn btn-outline-secondary fs-8 p-1 px-2"
+                                                        @click="callUpdateBookmarks([{id: bookmark.id, 'note': noteForms[bookmark.id]}], false)">
+                                                        <i
+                                                            :class="callxHas('note', bookmark.id) ?
+                                                                'spinner-border spinner-border-sm' :
+                                                                'bi bi-check2'"></i>
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <div class="col">
-                                                <span
-                                                    class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
-                                                    :class="{ 'fw-bold text-primary': bookmark.shared_at }"
-                                                    @click="callUpdateBookmarks([{id: bookmark.id, 'is_shared': bookmark.shared_at ? false : true}])">
-                                                    <i
-                                                        :class="callxHas('shared_at', bookmark.id) ?
-                                                            'spinner-border spinner-border-sm' : (bookmark
-                                                                .shared_at ?
-                                                                'bi-share-fill' : 'bi-share')"></i>
-                                                    <span class="text-truncate"
-                                                        x-text="bookmark.shared_at ? 'Shared' : 'Share'"></span>
-                                                </span>
+                                            <div class="col-sm-4 align-items-end d-flex">
+                                                <div class="input-group input-group-sm flex-nowrap pb-2">
+                                                    <span class="input-group-text fs-8">collection</span>
+                                                    <input type="text" class="form-control fs-8 p-1"
+                                                        x-model="collectionForms[bookmark.id]">
+                                                    <button class="btn btn-outline-secondary fs-8 p-1 px-2"
+                                                        @click="callUpdateBookmarks([{id: bookmark.id, 'collection': collectionForms[bookmark.id]}], true)">
+                                                        <i
+                                                            :class="callxHas('collection', bookmark.id) ?
+                                                                'spinner-border spinner-border-sm' :
+                                                                'bi bi-check2'"></i>
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <div class="col">
-                                                <span
-                                                    class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
-                                                    :class="{ 'fw-bold text-warning': bookmark.favorited_at }"
-                                                    @click="callUpdateBookmarks([{id: bookmark.id, 'is_favorited': bookmark.favorited_at ? false : true}])">
-                                                    <i
-                                                        :class="callxHas('favorited_at', bookmark.id) ?
-                                                            'spinner-border spinner-border-sm' : (bookmark
-                                                                .favorited_at ? 'bi-star-fill' : 'bi-star'
-                                                            )"></i>
-                                                    <span class="text-truncate"
-                                                        x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
-                                                </span>
-                                            </div>
-                                            <div class="col">
-                                                <span
-                                                    class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
-                                                    :class="{ 'fw-bold text-dark': bookmark.archived_at }"
-                                                    @click="callUpdateBookmarks([{id: bookmark.id, 'is_archived': bookmark.archived_at ? false : true}])">
-                                                    <i
-                                                        :class="callxHas('archived_at', bookmark.id) ?
-                                                            'spinner-border spinner-border-sm' :
-                                                            (bookmark.archived_at ? 'bi-archive-fill' : 'bi-archive')"></i>
-                                                    <span class="text-truncate"
-                                                        x-text="bookmark.archived_at ? 'Archived' : 'Archive'"></span>
-                                                </span>
-                                            </div>
-                                            <div class="col">
-                                                <button class="btn btn-outline-danger fs-8 p-1 w-100"
-                                                    :disabled="loading.callDestroyBookmark == bookmark.id"
-                                                    @click="callDestroyBookmark(bookmark.id)">
-                                                    <i
-                                                        :class="loading.callDestroyBookmark == bookmark.id ?
-                                                            'spinner-border spinner-border-sm' : 'bi bi-trash'"></i>
-                                                </button>
+                                            <div class="col-sm-4 align-items-end d-flex">
+                                                <div class="row g-0 gap-1 flex-grow-1 w-100 pb-2">
+                                                    <div class="col">
+                                                        <span
+                                                            class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
+                                                            :class="{ 'fw-bold text-success': bookmark.read_at }"
+                                                            @click="callUpdateBookmarks([{id: bookmark.id, 'is_read': bookmark.read_at ? false : true}])">
+                                                            <i
+                                                                :class="callxHas('is_read', bookmark.id) ?
+                                                                    'spinner-border spinner-border-sm' : (bookmark
+                                                                        .read_at ?
+                                                                        'bi-bookmark-check-fill' :
+                                                                        'bi-bookmark-check')"></i>
+                                                            <span class="text-truncate"
+                                                                x-text="bookmark.read_at ? 'Read' : 'Unread'"></span>
+                                                        </span>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span
+                                                            class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
+                                                            :class="{ 'fw-bold text-primary': bookmark.shared_at }"
+                                                            @click="callUpdateBookmarks([{id: bookmark.id, 'is_shared': bookmark.shared_at ? false : true}])">
+                                                            <i
+                                                                :class="callxHas('shared_at', bookmark.id) ?
+                                                                    'spinner-border spinner-border-sm' : (bookmark
+                                                                        .shared_at ?
+                                                                        'bi-share-fill' : 'bi-share')"></i>
+                                                            <span class="text-truncate"
+                                                                x-text="bookmark.shared_at ? 'Shared' : 'Share'"></span>
+                                                        </span>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span
+                                                            class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
+                                                            :class="{ 'fw-bold text-warning': bookmark.favorited_at }"
+                                                            @click="callUpdateBookmarks([{id: bookmark.id, 'is_favorited': bookmark.favorited_at ? false : true}])">
+                                                            <i
+                                                                :class="callxHas('favorited_at', bookmark.id) ?
+                                                                    'spinner-border spinner-border-sm' : (bookmark
+                                                                        .favorited_at ? 'bi-star-fill' : 'bi-star'
+                                                                    )"></i>
+                                                            <span class="text-truncate"
+                                                                x-text="bookmark.favorited_at ? 'Favorited' : 'Favorite'"></span>
+                                                        </span>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span
+                                                            class="cursor-pointer d-flex align-items-center justify-content-center gap-1 fs-8 py-1"
+                                                            :class="{ 'fw-bold text-dark': bookmark.archived_at }"
+                                                            @click="callUpdateBookmarks([{id: bookmark.id, 'is_archived': bookmark.archived_at ? false : true}])">
+                                                            <i
+                                                                :class="callxHas('archived_at', bookmark.id) ?
+                                                                    'spinner-border spinner-border-sm' :
+                                                                    (bookmark.archived_at ? 'bi-archive-fill' :
+                                                                        'bi-archive')"></i>
+                                                            <span class="text-truncate"
+                                                                x-text="bookmark.archived_at ? 'Archived' : 'Archive'"></span>
+                                                        </span>
+                                                    </div>
+                                                    <div class="col">
+                                                        <button class="btn btn-outline-danger fs-8 p-1 w-100"
+                                                            :disabled="loading.callDestroyBookmark == bookmark.id"
+                                                            @click="callDestroyBookmark(bookmark.id)">
+                                                            <i
+                                                                :class="loading.callDestroyBookmark == bookmark.id ?
+                                                                    'spinner-border spinner-border-sm' : 'bi bi-trash'"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </template>
+                    </div>
+                </template>
+
+                <template x-if="loading.callBookmarksIndex">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary"></div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <template x-if="!loading.callBookmarksIndex && (bookmarks.length < 1)">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="text-center py-4 text-secondary fs-6">
+                                <i class="bi bi-bookmarks fs-1 d-block mb-2"></i>
+                                Your search did not match any documents.
+                            </div>
+                        </div>
                     </div>
                 </template>
 
