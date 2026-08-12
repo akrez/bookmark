@@ -248,7 +248,7 @@ class BookmarkService extends Service
         }
 
         return ApiResponse::make(200)->data([
-            'bookamrks' => BookmarkResource::collection($bookmarks),
+            'bookamrks' => array_values((new BookmarkCollection($bookmarks))->toArray(request())),
         ]);
     }
 
