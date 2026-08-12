@@ -202,7 +202,7 @@
                     <div class="row">
                         <template x-for="(bookmark, index) in bookmarks">
                             <div class="col-12 d-flex border-bottom gap-2 pt-2">
-                                <div class="w-favicon d-flex flex-column align-items-center justify-content-center pb-2">
+                                <div class="w-favicon d-flex flex-column align-items-center justify-content-between pb-2">
                                     <img class="img-fluid w-100"
                                         :src="bookmark.url.favicon ?? bookmark.url.base_url + '/favicon.ico'"
                                         onerror="this.style.display='none'">
